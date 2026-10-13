@@ -1,2 +1,11 @@
+# Secrets - never commit these
 *.pem
+*.key
+.env
+.env.*
 *.env
+
+# Dependencies / build output
+node_modules/
+npm-debug.log*
+.DS_Store
