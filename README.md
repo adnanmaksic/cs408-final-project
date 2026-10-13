@@ -27,6 +27,16 @@ ssh -i ~/keys/mykey.pem ubuntu@<PUBLIC-IP>
 sudo bash deploy/setup-ec2.sh
 ```
 
+Or clone the repo on the server and run setup from the clone. It sets up the server and also installs and starts the app:
+
+```bash
+git clone https://github.com/adnanmaksic/cs408-final-project.git
+cd cs408-final-project
+sudo bash deploy/setup-ec2.sh
+```
+
+To update later from the server: `git pull && sudo bash deploy/setup-ec2.sh`.
+
 Every deploy, from your laptop:
 
 ```bash

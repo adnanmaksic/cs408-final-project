@@ -50,6 +50,27 @@ echo "${APP_USER} ALL=(root) NOPASSWD: /usr/bin/systemctl restart ${APP_NAME}, /
   > "/etc/sudoers.d/${APP_NAME}"
 chmod 440 "/etc/sudoers.d/${APP_NAME}"
 
+# If this script was run from a full clone of the repo (not just the scp'd
+# deploy/ folder), install the app from it and start it right away.
+REPO_DIR="$(dirname "$SCRIPT_DIR")"
+if [ -f "$REPO_DIR/package.json" ] && [ -f "$REPO_DIR/server.js" ]; then
+  echo "==> Installing app from ${REPO_DIR}"
+  rsync -a --delete --exclude node_modules --exclude .git --exclude .env --exclude '*.pem' \
+    "$REPO_DIR/" "$APP_DIR/"
+  chown -R "$APP_USER:$APP_USER" "$APP_DIR"
+  sudo -u "$APP_USER" bash -c "cd '$APP_DIR' && npm ci --omit=dev --no-fund --no-audit"
+  systemctl restart "${APP_NAME}"
+  sleep 2
+  if curl -fsS http://localhost/api/health >/dev/null; then
+    echo
+    echo "Setup complete. The app is running: http://$(curl -fsS http://checkip.amazonaws.com 2>/dev/null || echo '<PUBLIC-IP>')/"
+  else
+    echo "App did not respond. Check: sudo journalctl -u ${APP_NAME} -n 50" >&2
+    exit 1
+  fi
+  exit 0
+fi
+
 echo
 echo "Setup complete. Now deploy from your laptop:"
 echo "  ./deploy/deploy.sh -h <PUBLIC-IP> -i ~/keys/mykey.pem"
