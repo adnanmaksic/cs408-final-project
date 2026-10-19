@@ -11,12 +11,21 @@ html(lang="en")
   body.d-flex.flex-column.min-vh-100
     a.visually-hidden-focusable.position-absolute.p-2.bg-white(href="#main") Skip to content
 
-    //- Centered brand; clicking it slides open a row of links underneath.
+    //- Centered brand (clicking it slides open a row of links underneath),
+    //- with Log In / Sign Up always visible on the right.
     nav.navbar.navbar-dark.app-navbar
       .container.flex-column
-        button.brand-toggle(type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false")
-          span #{appName}
-          i.bi.bi-chevron-down.brand-chevron(aria-hidden="true")
+        .nav-top
+          button.brand-toggle(type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false")
+            span #{appName}
+            i.bi.bi-chevron-down.brand-chevron(aria-hidden="true")
+          .nav-auth
+            a.nav-pill(href="/login" class={ active: currentPath === '/login' } aria-label="Log In")
+              i.bi.bi-box-arrow-in-right(aria-hidden="true")
+              span.d-none.d-sm-inline Log In
+            a.nav-pill.nav-pill-solid(href="/register" class={ active: currentPath === '/register' } aria-label="Sign Up")
+              i.bi.bi-person-plus(aria-hidden="true")
+              span.d-none.d-sm-inline Sign Up
         #siteNav.collapse.w-100
           ul.nav-row
             each page in pages.filter((p) => p.nav)
@@ -25,15 +34,6 @@ html(lang="en")
                 a.nav-pill(href=page.path class={ active: isActive } aria-current=(isActive ? 'page' : undefined))
                   i.bi(class=`bi-${page.icon}` aria-hidden="true")
                   | #{page.title}
-            li.nav-row-divider(aria-hidden="true")
-            li
-              a.nav-pill(href="/login" class={ active: currentPath === '/login' })
-                i.bi.bi-box-arrow-in-right(aria-hidden="true")
-                | Log In
-            li
-              a.nav-pill.nav-pill-solid(href="/register" class={ active: currentPath === '/register' })
-                i.bi.bi-person-plus(aria-hidden="true")
-                | Sign Up
 
     main#main.flex-grow-1
       block content
