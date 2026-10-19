@@ -41,15 +41,6 @@
   line-height: 1;
 }
 
-.brand-chevron {
-  font-size: 0.85rem;
-  transition: transform 0.2s ease;
-}
-
-.brand-toggle[aria-expanded="true"] .brand-chevron {
-  transform: rotate(180deg);
-}
-
 /* Dropdown menu */
 .nav-menu {
   width: 17rem;
