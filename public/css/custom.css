@@ -35,12 +35,6 @@
   outline-offset: 3px;
 }
 
-.brand-logo {
-  display: inline-flex;
-  font-size: 1.3rem;
-  line-height: 1;
-}
-
 /* Dropdown menu */
 .nav-menu {
   width: 17rem;
