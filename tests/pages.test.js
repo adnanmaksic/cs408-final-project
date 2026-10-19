@@ -15,7 +15,6 @@ describe('pages', () => {
     expect(res.text).toContain('href="/register"');
     expect(res.text).toContain('href="/login"');
     expect(res.text).toContain('<nav class="navbar');
-    expect(res.text).toContain('<footer');
   });
 
   test('GET /about renders the About page', async () => {

@@ -9,7 +9,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 app.disable('x-powered-by');
 
-// Available in every template (navbar, footer, quick links).
+// Available in every template (navbar, quick links, About page).
 app.locals.appName = 'Grade Tracker';
 app.locals.author = 'Ado Maksic';
 app.locals.course = 'CS 408 Full Stack Web Development';

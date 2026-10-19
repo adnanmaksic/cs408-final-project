@@ -61,7 +61,7 @@ Or from your laptop (runs the tests, copies the code, restarts and checks `/api/
 | --- | --- |
 | `app.js`, `server.js` | Express app and the entry point that starts it |
 | `routes/pages.js` | Landing, About, and placeholders for pages planned in later checkpoints |
-| `views/layout.pug` | Shared layout: Bootstrap navbar and footer used by every page |
+| `views/layout.pug` | Shared layout: Bootstrap navbar used by every page |
 | `views/*.pug` | Page templates |
 | `public/` | CSS and favicon |
 | `tests/` | Jest + Supertest tests |
