@@ -1,0 +1,86 @@
+extends layout
+
+block content
+  .container.py-5
+    .row.justify-content-center
+      .col-lg-9
+        h1.mb-3 About & Help
+        p.lead.text-body-secondary
+          | Grade Tracker gives college students one place to see every assignment, exam and
+          | grade across all their classes, so they can quickly answer two questions:
+          | "What do I have to do this week?" and "What score do I need to keep my A?"
+
+        section.mt-5
+          h2.h4.mb-3
+            i.bi.bi-calculator.me-2(aria-hidden="true")
+            | How grades are calculated
+          ol.list-group.list-group-numbered
+            li.list-group-item
+              strong Weighted categories.
+              |  Each course has grading categories (for example Homework 30%, Exams 50%, Final 20%)
+              |  whose weights add up to 100%.
+            li.list-group-item
+              strong Category grade.
+              |  Within a category, your grade is the points you earned divided by the points possible,
+              |  counting only graded items.
+            li.list-group-item
+              strong Current grade.
+              |  Each category grade is multiplied by its weight and the results are added together.
+              |  Categories with no grades yet are left out and the rest are rescaled, so an early
+              |  homework score isn't diluted by exams you haven't taken.
+            li.list-group-item
+              strong Needed score.
+              |  Given your target grade, the calculator works out the average percentage you need
+              |  on the remaining work to reach it.
+            li.list-group-item
+              strong Letter grades.
+              |  A standard scale is used (A ≥ 93, A- ≥ 90, B+ ≥ 87, and so on), and you can adjust
+              |  it for each course.
+
+          .card.mt-3.border-primary-subtle
+            .card-body
+              h3.h6.card-title Worked example
+              p.card-text.mb-0
+                | Homework (30%) at 90% and Exams (50%) at 80%, with the Final (20%) not taken yet:
+                | (0.30 × 90 + 0.50 × 80) ÷ (0.30 + 0.50) = 67 ÷ 0.80 =
+                strong  83.75%
+                | .
+
+        section.mt-5
+          h2.h4.mb-3
+            i.bi.bi-question-circle.me-2(aria-hidden="true")
+            | Frequently asked questions
+          #faq.accordion
+            each item, i in [{q: 'Is Grade Tracker connected to Canvas?', a: "No. You enter your own courses, weights and scores, so it works with any school or LMS and never needs your school login."}, {q: 'Who can see my courses and grades?', a: 'Only you. Every page and search is limited to the logged-in account, and passwords are stored as bcrypt hashes.'}, {q: 'What if my syllabus weights do not add up to 100%?', a: 'The course form checks that the category weights total exactly 100% before saving, so double-check the syllabus and adjust the categories.'}, {q: 'Can I try out scores before I get them back?', a: "Yes. The Grade Calculator lets you type what-if scores for ungraded work and see how your course grade would change without saving anything."}, {q: 'Can I delete my data?', a: 'Yes. You can delete any course or assignment, or delete your whole account and everything in it.'}]
+              .accordion-item
+                h3.accordion-header
+                  button.accordion-button(class={ collapsed: i > 0 } type="button" data-bs-toggle="collapse" data-bs-target=`#faq-${i}` aria-expanded=(i === 0 ? 'true' : 'false') aria-controls=`faq-${i}`)= item.q
+                .accordion-collapse.collapse(id=`faq-${i}` class={ show: i === 0 } data-bs-parent="#faq")
+                  .accordion-body= item.a
+
+        section.mt-5
+          h2.h4.mb-3
+            i.bi.bi-envelope.me-2(aria-hidden="true")
+            | Contact & credits
+          .row.g-3
+            .col-md-6
+              .card.h-100
+                .card-body
+                  h3.h6.card-title Contact
+                  p.card-text.mb-1 #{author}, #{course}
+                  p.card-text.mb-0
+                    | Found a bug or have an idea? Open an issue on
+                    a.ms-1(href=githubUrl) GitHub
+                    | .
+            .col-md-6
+              .card.h-100
+                .card-body
+                  h3.h6.card-title Credits
+                  ul.card-text.mb-0.ps-3
+                    li
+                      a(href="https://getbootstrap.com/") Bootstrap 5
+                      |  (MIT license)
+                    li
+                      a(href="https://icons.getbootstrap.com/") Bootstrap Icons
+                      |  (MIT license)
+                    li Logo and favicon by #{author}

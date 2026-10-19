@@ -30,9 +30,13 @@ else
 fi
 
 # 3. First-run setup -----------------------------------------------------------
-# This app has no database; just make sure the static assets are present.
+# Database migrations and seed data are added in Checkpoint 2; until then
+# these are skipped because the npm scripts don't exist yet.
 echo "==> Preparing app"
-[ -f public/index.html ] || fail "public/index.html is missing - is this a complete clone of the repository?"
+[ -f views/layout.pug ] || fail "views/layout.pug is missing - is this a complete clone of the repository?"
+mkdir -p data
+npm run --silent --if-present db:migrate
+npm run --silent --if-present db:seed
 
 # 4. Start the app -------------------------------------------------------------
 echo "==> Starting app"

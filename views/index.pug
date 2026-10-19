@@ -1,0 +1,50 @@
+extends layout
+
+block content
+  section.hero.text-white
+    .container.py-5
+      .row.align-items-center.py-lg-4
+        .col-lg-7
+          h1.display-5.fw-bold Every assignment. Every grade. One place.
+          p.lead.my-4
+            | Grade Tracker shows what's due this week, keeps a live weighted grade
+            | for each of your courses, and tells you the score you need to reach your target.
+          .d-flex.flex-wrap.gap-2
+            a.btn.btn-light.btn-lg(href="/register")
+              i.bi.bi-person-plus.me-2(aria-hidden="true")
+              | Sign Up
+            a.btn.btn-outline-light.btn-lg(href="/login")
+              i.bi.bi-box-arrow-in-right.me-2(aria-hidden="true")
+              | Log In
+        .col-lg-5.d-none.d-lg-block.text-center
+          i.bi.bi-calendar2-check.hero-icon(aria-hidden="true")
+
+  section.container.py-5
+    h2.h3.text-center.mb-4 Why Grade Tracker?
+    .row.g-4
+      each feature in features
+        .col-md-4
+          .card.h-100.border-0.shadow-sm
+            .card-body.p-4
+              .feature-icon.mb-3
+                i.bi(class=`bi-${feature.icon}` aria-hidden="true")
+              h3.h5.card-title= feature.title
+              p.card-text.text-body-secondary= feature.text
+
+  section.container.pb-5
+    .card.border-0.bg-body-tertiary
+      .card-body.p-4
+        h2.h5.mb-3
+          i.bi.bi-signpost-split.me-2(aria-hidden="true")
+          | Quick links
+        .row.row-cols-1.row-cols-sm-2.row-cols-lg-3.g-2
+          each page in pages.filter((p) => p.path !== '/')
+            .col
+              a.quick-link.d-flex.align-items-center.justify-content-between.gap-2.p-2.rounded.text-decoration-none(href=page.path)
+                span
+                  i.bi.me-2(class=`bi-${page.icon}` aria-hidden="true")
+                  | #{page.title}
+                if page.checkpoint
+                  span.badge.text-bg-secondary Coming soon
+                else
+                  span.badge.text-bg-success Ready

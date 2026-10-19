@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  .container.py-5.text-center
+    p.display-1.fw-bold.text-primary= status
+    h1.h3= title
+    p.lead.text-body-secondary= message
+    a.btn.btn-primary.mt-2(href="/")
+      i.bi.bi-house.me-2(aria-hidden="true")
+      | Back to home

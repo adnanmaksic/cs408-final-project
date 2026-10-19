@@ -3,7 +3,7 @@
 #   ./deploy/deploy.sh -h <PUBLIC-IP> -i ~/keys/mykey.pem [-u ubuntu]
 set -euo pipefail
 
-APP_NAME="cs408-app"
+APP_NAME="grade-tracker"
 APP_DIR="/opt/${APP_NAME}"
 HOST=""
 KEY=""
@@ -32,16 +32,16 @@ npm test
 echo "==> Copying code to ${REMOTE}:${APP_DIR}"
 if command -v rsync >/dev/null 2>&1; then
   rsync -az --delete \
-    --exclude node_modules --exclude .git --exclude .env --exclude '*.pem' \
+    --exclude node_modules --exclude .git --exclude .env --exclude data --exclude '*.pem' \
     -e "ssh -i \"$KEY\" -o StrictHostKeyChecking=accept-new" \
     ./ "${REMOTE}:${APP_DIR}/"
 else
   # rsync isn't available (e.g. Git Bash on Windows): stream a tarball instead.
   echo "    (rsync not found, using tar over ssh)"
   tar -czf - \
-    --exclude=./node_modules --exclude=./.git --exclude=./.env --exclude='*.pem' . \
+    --exclude=./node_modules --exclude=./.git --exclude=./.env --exclude=./data --exclude='*.pem' . \
     | ssh "${SSH_OPTS[@]}" "$REMOTE" \
-      "find ${APP_DIR} -mindepth 1 -maxdepth 1 ! -name node_modules -exec rm -rf {} + && tar -xzf - -C ${APP_DIR}"
+      "find ${APP_DIR} -mindepth 1 -maxdepth 1 ! -name node_modules ! -name .git ! -name .env ! -name data -exec rm -rf {} + && tar -xzf - -C ${APP_DIR}"
 fi
 
 echo "==> Installing dependencies and restarting ${APP_NAME}"

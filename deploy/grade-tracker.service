@@ -1,0 +1,20 @@
+[Unit]
+Description=Assignment & Grade Tracker
+After=network.target
+
+[Service]
+Type=simple
+# configure.sh / setup-ec2.sh replace this with the user who ran them (ubuntu by default)
+User=ubuntu
+WorkingDirectory=/opt/grade-tracker
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOST=127.0.0.1
+# Optional: created by scripts/configure.sh
+EnvironmentFile=-/opt/grade-tracker/.env
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

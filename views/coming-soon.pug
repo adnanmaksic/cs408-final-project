@@ -1,0 +1,11 @@
+extends layout
+
+block content
+  .container.py-5.text-center
+    i.bi.display-1.text-primary(class=`bi-${page.icon}` aria-hidden="true")
+    h1.mt-3= page.title
+    p.lead.text-body-secondary
+      | This page is coming in Checkpoint #{page.checkpoint} of the project.
+    a.btn.btn-primary.mt-2(href="/")
+      i.bi.bi-house.me-2(aria-hidden="true")
+      | Back to home
