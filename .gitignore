@@ -13,3 +13,5 @@ data/
 coverage/
 npm-debug.log*
 .DS_Store
+
+# Local editor/tool settings

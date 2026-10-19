@@ -27,7 +27,7 @@ describe('pages', () => {
   test('planned pages show a placeholder', async () => {
     const res = await request(app).get('/login');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('Checkpoint 2');
+    expect(res.text).toContain('Work in Progress');
   });
 
   test('unknown pages return 404', async () => {
