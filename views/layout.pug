@@ -11,27 +11,29 @@ html(lang="en")
   body.d-flex.flex-column.min-vh-100
     a.visually-hidden-focusable.position-absolute.p-2.bg-white(href="#main") Skip to content
 
-    //- Centered brand; clicking it opens a dropdown with every page.
+    //- Centered brand; clicking it slides open a row of links underneath.
     nav.navbar.navbar-dark.app-navbar
-      .container.justify-content-center
-        .dropdown-center
-          button.brand-toggle(type="button" data-bs-toggle="dropdown" data-bs-offset="0,12" aria-expanded="false")
-            span.brand-name #{appName}
-          .dropdown-menu.nav-menu
-            h2.nav-menu-heading Menu
-            ul.list-unstyled.mb-0
-              each page in pages.filter((p) => p.nav)
-                - const isActive = currentPath === page.path
-                li
-                  a.nav-menu-item(href=page.path class={ active: isActive } aria-current=(isActive ? 'page' : undefined))
-                    span.nav-menu-icon(aria-hidden="true")
-                      i.bi(class=`bi-${page.icon}`)
-                    span.flex-grow-1 #{page.title}
-                    if page.checkpoint
-                      span.nav-menu-badge WIP
-            .nav-menu-actions
-              a.btn.btn-outline-primary.btn-sm.flex-fill(href="/login") Log In
-              a.btn.btn-primary.btn-sm.flex-fill(href="/register") Sign Up
+      .container.flex-column
+        button.brand-toggle(type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false")
+          span #{appName}
+          i.bi.bi-chevron-down.brand-chevron(aria-hidden="true")
+        #siteNav.collapse.w-100
+          ul.nav-row
+            each page in pages.filter((p) => p.nav)
+              - const isActive = currentPath === page.path
+              li
+                a.nav-pill(href=page.path class={ active: isActive } aria-current=(isActive ? 'page' : undefined))
+                  i.bi(class=`bi-${page.icon}` aria-hidden="true")
+                  | #{page.title}
+            li.nav-row-divider(aria-hidden="true")
+            li
+              a.nav-pill(href="/login" class={ active: currentPath === '/login' })
+                i.bi.bi-box-arrow-in-right(aria-hidden="true")
+                | Log In
+            li
+              a.nav-pill.nav-pill-solid(href="/register" class={ active: currentPath === '/register' })
+                i.bi.bi-person-plus(aria-hidden="true")
+                | Sign Up
 
     main#main.flex-grow-1
       block content
