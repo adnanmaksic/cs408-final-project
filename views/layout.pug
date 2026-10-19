@@ -12,29 +12,29 @@ html(lang="en")
     a.visually-hidden-focusable.position-absolute.p-2.bg-white(href="#main") Skip to content
 
     //- Centered brand; clicking it opens a dropdown with every page.
-    nav.navbar.navbar-dark.bg-primary.shadow-sm
+    nav.navbar.navbar-dark.app-navbar
       .container.justify-content-center
         .dropdown-center
-          button.navbar-brand.brand-toggle.fw-bold.dropdown-toggle.me-0(type="button" data-bs-toggle="dropdown" aria-expanded="false")
-            i.bi.bi-mortarboard-fill.me-2(aria-hidden="true")
-            | #{appName}
-          ul.dropdown-menu.shadow
-            each page in pages.filter((p) => p.nav)
-              - const isActive = currentPath === page.path
-              li
-                a.dropdown-item(href=page.path class={ active: isActive } aria-current=(isActive ? 'page' : undefined))
-                  i.bi.me-2(class=`bi-${page.icon}` aria-hidden="true")
-                  | #{page.title}
-            li
-              hr.dropdown-divider
-            li
-              a.dropdown-item(href="/login" class={ active: currentPath === '/login' })
-                i.bi.bi-box-arrow-in-right.me-2(aria-hidden="true")
-                | Log In
-            li
-              a.dropdown-item(href="/register" class={ active: currentPath === '/register' })
-                i.bi.bi-person-plus.me-2(aria-hidden="true")
-                | Sign Up
+          button.brand-toggle(type="button" data-bs-toggle="dropdown" data-bs-offset="0,12" aria-expanded="false")
+            span.brand-logo(aria-hidden="true")
+              i.bi.bi-mortarboard-fill
+            span.brand-name #{appName}
+            i.bi.bi-chevron-down.brand-chevron(aria-hidden="true")
+          .dropdown-menu.nav-menu
+            h2.nav-menu-heading Menu
+            ul.list-unstyled.mb-0
+              each page in pages.filter((p) => p.nav)
+                - const isActive = currentPath === page.path
+                li
+                  a.nav-menu-item(href=page.path class={ active: isActive } aria-current=(isActive ? 'page' : undefined))
+                    span.nav-menu-icon(aria-hidden="true")
+                      i.bi(class=`bi-${page.icon}`)
+                    span.flex-grow-1 #{page.title}
+                    if page.checkpoint
+                      span.nav-menu-badge WIP
+            .nav-menu-actions
+              a.btn.btn-outline-primary.btn-sm.flex-fill(href="/login") Log In
+              a.btn.btn-primary.btn-sm.flex-fill(href="/register") Sign Up
 
     main#main.flex-grow-1
       block content
