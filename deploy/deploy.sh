@@ -44,9 +44,9 @@ else
       "find ${APP_DIR} -mindepth 1 -maxdepth 1 ! -name node_modules ! -name .git ! -name .env ! -name data -exec rm -rf {} + && tar -xzf - -C ${APP_DIR}"
 fi
 
-echo "==> Installing dependencies and restarting ${APP_NAME}"
+echo "==> Installing dependencies, migrating the database and restarting ${APP_NAME}"
 ssh "${SSH_OPTS[@]}" "$REMOTE" \
-  "cd ${APP_DIR} && npm ci --omit=dev --no-fund --no-audit && sudo systemctl restart ${APP_NAME}"
+  "cd ${APP_DIR} && npm ci --omit=dev --no-fund --no-audit && npm run db:migrate && sudo systemctl restart ${APP_NAME}"
 
 echo "==> Checking http://${HOST}/api/health"
 for _ in $(seq 1 10); do

@@ -5,7 +5,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-REQUIRED_NODE_MAJOR=18
+REQUIRED_NODE_MAJOR=20
 PORT="${PORT:-3000}"
 
 fail() { echo "ERROR: $*" >&2; exit 1; }
@@ -30,18 +30,19 @@ else
 fi
 
 # 3. First-run setup -----------------------------------------------------------
-# Database migrations and seed data are added in Checkpoint 2; until then
-# these are skipped because the npm scripts don't exist yet.
-echo "==> Preparing app"
+# Creates data/grade-tracker.db with every table, plus a demo account with
+# sample courses and assignments. Both steps skip work that is already done.
+echo "==> Preparing database"
 [ -f views/layout.pug ] || fail "views/layout.pug is missing - is this a complete clone of the repository?"
 mkdir -p data
-npm run --silent --if-present db:migrate
-npm run --silent --if-present db:seed
+npm run --silent db:migrate
+npm run --silent db:seed
 
 # 4. Start the app -------------------------------------------------------------
 echo "==> Starting app"
 echo
 echo "    Open http://localhost:${PORT}/ in your browser (Ctrl+C to stop)"
+echo "    Demo login: demo@gradetracker.test / demo-password"
 echo
 export PORT
 exec node server.js

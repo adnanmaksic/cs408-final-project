@@ -1,18 +1,24 @@
 {
   "name": "grade-tracker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Assignment & Grade Tracker - CS 408 final project",
   "main": "server.js",
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "test": "jest"
+    "test": "jest",
+    "db:migrate": "node db/migrate.js",
+    "db:seed": "node db/seed.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.11.1",
     "express": "^4.21.2",
+    "express-session": "^1.19.0",
+    "express-validator": "^7.3.2",
     "pug": "^3.0.3"
   },
   "devDependencies": {
@@ -20,6 +26,9 @@
     "supertest": "^7.1.0"
   },
   "jest": {
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "setupFiles": [
+      "<rootDir>/tests/setup-env.js"
+    ]
   }
 }

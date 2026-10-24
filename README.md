@@ -2,11 +2,11 @@
 
 A full-stack web app that helps college students plan their assignments and track their grades: what's due this week, a live weighted grade for every course, and a "what do I need?" calculator.
 
-Built with Node.js, Express, Pug and Bootstrap 5 (SQLite arrives in Checkpoint 2), and deployed on AWS EC2 behind nginx.
+Built with Node.js, Express, SQLite (better-sqlite3), Pug and Bootstrap 5, and deployed on AWS EC2 behind nginx. Accounts use bcrypt-hashed passwords and server-side sessions stored in SQLite.
 
 ## 1. Install first
 
-- [Node.js](https://nodejs.org/) **18 or newer** (22 LTS recommended; includes npm)
+- [Node.js](https://nodejs.org/) **20 or newer** (22 LTS recommended; includes npm)
 - Git and a bash shell (Linux/macOS terminal, or Git Bash on Windows)
 
 ## 2. Run locally
@@ -18,6 +18,14 @@ cd cs408-final-project
 ```
 
 Then open <http://localhost:3000/>. Use `PORT=8080 ./start.sh` for a different port. Run the tests with `npm test`.
+
+`start.sh` creates the SQLite database at `data/grade-tracker.db` and a demo account you can log in with:
+
+| Email | Password |
+| --- | --- |
+| `demo@gradetracker.test` | `demo-password` |
+
+Database commands: `npm run db:migrate` applies any new files in `db/migrations/`, and `npm run db:seed` adds the demo account (both are safe to run again). To start over, stop the app and delete the `data/` folder.
 
 ## 3. Deploy to EC2 (Ubuntu 24.04)
 
@@ -44,7 +52,7 @@ Then open <http://localhost:3000/>. Use `PORT=8080 ./start.sh` for a different p
 On the server:
 
 ```bash
-cd /opt/grade-tracker && git pull && npm ci --omit=dev && sudo systemctl restart grade-tracker
+cd /opt/grade-tracker && git pull && npm ci --omit=dev && npm run db:migrate && sudo systemctl restart grade-tracker
 ```
 
 Or from your laptop (runs the tests, copies the code, restarts and checks `/api/health`):
@@ -60,7 +68,12 @@ Or from your laptop (runs the tests, copies the code, restarts and checks `/api/
 | Path | Purpose |
 | --- | --- |
 | `app.js`, `server.js` | Express app and the entry point that starts it |
-| `routes/pages.js` | Landing, About, and placeholders for pages planned in later checkpoints |
+| `routes/pages.js` | Landing, About, Dashboard, and placeholders for pages planned in later checkpoints |
+| `routes/auth.js` | Register, Log In and Log Out (bcrypt, express-validator, sessions) |
+| `lib/auth.js` | Loads the logged-in user, `requireLogin` for protected routes, flash messages |
+| `lib/db.js`, `lib/session-store.js` | SQLite connection and the SQLite-backed session store |
+| `db/migrations/`, `db/migrate.js` | Schema (users, courses, categories, assignments, sessions) and the migration runner |
+| `db/seed.js` | Demo account with sample courses, categories and assignments |
 | `views/layout.pug` | Shared layout: Bootstrap navbar used by every page |
 | `views/*.pug` | Page templates |
 | `public/` | CSS and favicon |

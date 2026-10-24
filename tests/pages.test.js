@@ -24,10 +24,11 @@ describe('pages', () => {
     expect(res.text).toContain('Frequently asked questions');
   });
 
-  test('planned pages show a placeholder', async () => {
+  test('GET /login shows the Log In and Create Account forms', async () => {
     const res = await request(app).get('/login');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('Work in Progress');
+    expect(res.text).toContain('action="/login"');
+    expect(res.text).toContain('action="/register"');
   });
 
   test('unknown pages return 404', async () => {

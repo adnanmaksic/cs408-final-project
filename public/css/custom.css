@@ -26,7 +26,25 @@
   grid-column: 3;
   justify-self: end;
   display: flex;
+  align-items: center;
   gap: 0.35rem;
+}
+
+button.nav-pill {
+  background: none;
+  cursor: pointer;
+}
+
+.nav-user-name {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Login / register: highlight the card the visitor came for. */
+.auth-card-active {
+  box-shadow: 0 0 0 2px var(--bs-primary), 0 0.5rem 1.5rem rgba(13, 110, 253, 0.12) !important;
 }
 
 .brand-toggle {

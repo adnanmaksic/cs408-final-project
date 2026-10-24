@@ -12,7 +12,7 @@ html(lang="en")
     a.visually-hidden-focusable.position-absolute.p-2.bg-white(href="#main") Skip to content
 
     //- Centered brand (clicking it slides open a row of links underneath),
-    //- with Log In / Sign Up always visible on the right.
+    //- with the account controls always visible on the right.
     nav.navbar.navbar-dark.app-navbar
       .container.flex-column
         .nav-top
@@ -20,12 +20,21 @@ html(lang="en")
             span #{appName}
             i.bi.bi-chevron-down.brand-chevron(aria-hidden="true")
           .nav-auth
-            a.nav-pill(href="/login" class={ active: currentPath === '/login' } aria-label="Log In")
-              i.bi.bi-box-arrow-in-right(aria-hidden="true")
-              span.d-none.d-sm-inline Log In
-            a.nav-pill.nav-pill-solid(href="/register" class={ active: currentPath === '/register' } aria-label="Sign Up")
-              i.bi.bi-person-plus(aria-hidden="true")
-              span.d-none.d-sm-inline Sign Up
+            if currentUser
+              a.nav-pill(href="/dashboard" title=currentUser.email aria-label=`Dashboard for ${currentUser.display_name}`)
+                i.bi.bi-person-circle(aria-hidden="true")
+                span.d-none.d-sm-inline.nav-user-name= currentUser.display_name
+              form.d-inline(method="post" action="/logout")
+                button.nav-pill.nav-pill-solid(type="submit" aria-label="Log Out")
+                  i.bi.bi-box-arrow-right(aria-hidden="true")
+                  span.d-none.d-sm-inline Log Out
+            else
+              a.nav-pill(href="/login" class={ active: currentPath === '/login' } aria-label="Log In")
+                i.bi.bi-box-arrow-in-right(aria-hidden="true")
+                span.d-none.d-sm-inline Log In
+              a.nav-pill.nav-pill-solid(href="/register" class={ active: currentPath === '/register' } aria-label="Sign Up")
+                i.bi.bi-person-plus(aria-hidden="true")
+                span.d-none.d-sm-inline Sign Up
         #siteNav.collapse.w-100
           ul.nav-row
             each page in pages.filter((p) => p.nav)
@@ -36,6 +45,11 @@ html(lang="en")
                   | #{page.title}
 
     main#main.flex-grow-1
+      if flash
+        .container.pt-3
+          .alert.alert-dismissible.fade.show.mb-0(class=`alert-${flash.type}` role="status")
+            | #{flash.message}
+            button.btn-close(type="button" data-bs-dismiss="alert" aria-label="Close")
       block content
 
     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")

@@ -1,0 +1,30 @@
+extends layout
+
+block content
+  .container.py-5
+    h1.h2.mb-1 Hi, #{currentUser.display_name}!
+    p.text-body-secondary.mb-4 Here's a quick look at your account.
+
+    .row.g-3.mb-4
+      each stat in [{ label: 'Courses', value: stats.courses, icon: 'journal-bookmark' }, { label: 'Assignments', value: stats.assignments, icon: 'list-check' }, { label: 'Due in the next 7 days', value: stats.dueThisWeek, icon: 'calendar-week' }]
+        .col-sm-4
+          .card.h-100.border-0.shadow-sm
+            .card-body.d-flex.align-items-center.gap-3
+              .feature-icon
+                i.bi(class=`bi-${stat.icon}` aria-hidden="true")
+              div
+                .fs-3.fw-bold.lh-1= stat.value
+                .small.text-body-secondary= stat.label
+
+    .card.border-0.bg-body-tertiary
+      .card-body.p-4
+        h2.h5
+          i.bi.bi-person-circle.me-2(aria-hidden="true")
+          | Your account
+        dl.row.mb-0
+          dt.col-sm-3 Display name
+          dd.col-sm-9= currentUser.display_name
+          dt.col-sm-3 Email
+          dd.col-sm-9.mb-0= currentUser.email
+        p.text-body-secondary.small.mt-3.mb-0
+          | The full dashboard (due dates, overdue work and grade cards) is a Work in Progress.

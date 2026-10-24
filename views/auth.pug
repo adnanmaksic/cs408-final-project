@@ -1,0 +1,50 @@
+extends layout
+
+//- Text input with Bootstrap validation styling and an inline error.
+mixin field(errors, name, label, type, value, attrs)
+  - const err = errors[name]
+  .mb-3
+    label.form-label(for=attrs.id)= label
+    input.form-control(type=type name=name value=value class={ 'is-invalid': err } aria-invalid=(err ? 'true' : undefined) aria-describedby=(err ? `${attrs.id}-error` : undefined))&attributes(attrs)
+    if err
+      .invalid-feedback(id=`${attrs.id}-error`)= err.msg
+
+block content
+  .container.py-5
+    .text-center.mb-4
+      h1.h2.mb-1 Welcome to #{appName}
+      p.text-body-secondary.mb-0 Log in to your account, or create one in under a minute.
+
+    .row.g-4.justify-content-center
+      //- Log In card
+      .col-md-6.col-lg-5
+        .card.h-100.border-0.shadow-sm(class={ 'auth-card-active': mode === 'login' })
+          .card-body.p-4
+            h2.h4.mb-3
+              i.bi.bi-box-arrow-in-right.me-2.text-primary(aria-hidden="true")
+              | Log In
+            if loginErrors.form
+              .alert.alert-danger.py-2(role="alert")= loginErrors.form.msg
+            form(method="post" action="/login" novalidate)
+              if next
+                input(type="hidden" name="next" value=next)
+              +field(loginErrors, 'email', 'Email', 'email', values.loginEmail, { id: 'login-email', autocomplete: 'email', required: true, autofocus: mode === 'login' })
+              +field(loginErrors, 'password', 'Password', 'password', '', { id: 'login-password', autocomplete: 'current-password', required: true })
+              button.btn.btn-primary.w-100(type="submit") Log In
+
+      //- Register card
+      .col-md-6.col-lg-5
+        .card.h-100.border-0.shadow-sm(class={ 'auth-card-active': mode === 'register' })
+          .card-body.p-4
+            h2.h4.mb-3
+              i.bi.bi-person-plus.me-2.text-primary(aria-hidden="true")
+              | Create Account
+            form(method="post" action="/register" novalidate)
+              if next
+                input(type="hidden" name="next" value=next)
+              +field(registerErrors, 'display_name', 'Display name', 'text', values.display_name, { id: 'register-name', autocomplete: 'nickname', maxlength: 50, required: true, autofocus: mode === 'register' })
+              +field(registerErrors, 'email', 'Email', 'email', values.registerEmail, { id: 'register-email', autocomplete: 'email', required: true })
+              +field(registerErrors, 'password', 'Password', 'password', '', { id: 'register-password', autocomplete: 'new-password', minlength: 8, required: true })
+              +field(registerErrors, 'confirm_password', 'Confirm password', 'password', '', { id: 'register-confirm', autocomplete: 'new-password', required: true })
+              .form-text.mb-3 At least 8 characters.
+              button.btn.btn-primary.w-100(type="submit") Create Account

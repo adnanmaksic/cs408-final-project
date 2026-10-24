@@ -33,11 +33,11 @@ EOF
   echo "    created .env"
 fi
 
-# 2. Database (migrations and seed data arrive in Checkpoint 2)
+# 2. Database: create or update the tables and add the demo account
 echo "==> Database"
 mkdir -p data
-npm run --if-present db:migrate
-npm run --if-present db:seed
+npm run db:migrate
+npm run db:seed
 
 # Remove the Hello World service from assignment 07.02, if it is still installed.
 if [ -f /etc/systemd/system/cs408-app.service ]; then
