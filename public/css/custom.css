@@ -161,3 +161,16 @@ button.nav-pill {
   color: var(--bs-primary);
   border-color: var(--bs-primary);
 }
+
+/* Course code badge, drawn in the color the user picked for the course. */
+.course-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.5rem;
+  background: var(--course-color, var(--bs-primary));
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+}

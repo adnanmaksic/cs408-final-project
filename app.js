@@ -8,6 +8,7 @@ const { migrate } = require('./db/migrate');
 const SqliteSessionStore = require('./lib/session-store');
 const { loadUser, flash } = require('./lib/auth');
 const authRouter = require('./routes/auth');
+const coursesRouter = require('./routes/courses');
 const pagesRouter = require('./routes/pages');
 
 const db = getDb();
@@ -60,6 +61,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/', authRouter);
+app.use('/', coursesRouter);
 app.use('/', pagesRouter);
 
 app.use((req, res) => {

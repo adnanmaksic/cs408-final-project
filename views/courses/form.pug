@@ -1,0 +1,104 @@
+extends ../layout
+
+//- Text input with inline validation error.
+mixin input(name, label, attrs)
+  - const err = errors[name]
+  label.form-label(for=name)= label
+  input.form-control(id=name name=name value=values[name] class={ 'is-invalid': err } aria-describedby=(err ? `${name}-error` : undefined))&attributes(attrs)
+  if err
+    .invalid-feedback(id=`${name}-error`)= err.msg
+
+//- One grading-category row. `locked` rows have assignments and can't be removed.
+mixin categoryRow(cat, rowError)
+  - const err = rowError || {}
+  - const locked = cat.assignment_count > 0
+  .category-row.row.g-2.align-items-start.mb-2
+    input(type="hidden" name="category_id" value=(cat.id || ''))
+    .col
+      input.form-control(type="text" name="category_name" value=cat.name placeholder="e.g. Homework" maxlength="50" aria-label="Category name" class={ 'is-invalid': err.name })
+      if err.name
+        .invalid-feedback= err.name
+    .col-4.col-sm-3
+      .input-group(class={ 'has-validation': err.weight })
+        input.form-control.category-weight(type="number" name="category_weight" value=cat.weight min="0" max="100" step="any" placeholder="0" aria-label="Weight in percent" class={ 'is-invalid': err.weight })
+        span.input-group-text %
+        if err.weight
+          .invalid-feedback= err.weight
+    .col-auto
+      if locked
+        button.btn.btn-outline-secondary(type="button" disabled title=`${cat.assignment_count} assignment(s) use this category`)
+          i.bi.bi-lock(aria-hidden="true")
+          span.visually-hidden Can't remove: assignments use this category
+      else
+        button.btn.btn-outline-danger(type="button" data-remove-category aria-label="Remove category")
+          i.bi.bi-x-lg(aria-hidden="true")
+
+block content
+  .container.py-5
+    nav(aria-label="breadcrumb")
+      ol.breadcrumb
+        li.breadcrumb-item
+          a(href="/courses") My Courses
+        if course
+          li.breadcrumb-item
+            a(href=`/courses/${course.id}`)= course.code
+        li.breadcrumb-item.active(aria-current="page")= course ? 'Edit' : 'Add Course'
+
+    h1.h2.mb-4= course ? `Edit ${course.code}` : 'Add Course'
+
+    form#courseForm(method="post" action=(course ? `/courses/${course.id}` : '/courses') novalidate)
+      .row.g-4
+        .col-lg-6
+          .card.border-0.shadow-sm.h-100
+            .card-body.p-4
+              h2.h5.mb-3 Course details
+              .row.g-3
+                .col-sm-5
+                  +input('code', 'Course code', { required: true, maxlength: 20, placeholder: 'CS 408' })
+                .col-sm-7
+                  +input('name', 'Course name', { required: true, maxlength: 100, placeholder: 'Full Stack Web Development' })
+                .col-sm-7
+                  +input('instructor', 'Instructor (optional)', { maxlength: 100 })
+                .col-sm-5
+                  +input('term', 'Term', { required: true, maxlength: 30, placeholder: 'Fall 2026' })
+                .col-sm-6
+                  +input('target_grade', 'Target grade (%)', { type: 'number', min: 0, max: 100, step: 'any', required: true })
+                .col-sm-6
+                  - const colorErr = errors.color
+                  label.form-label(for="color") Badge color
+                  input#color.form-control.form-control-color.w-100(type="color" name="color" value=values.color class={ 'is-invalid': colorErr })
+                  if colorErr
+                    .invalid-feedback= colorErr.msg
+
+        .col-lg-6
+          .card.border-0.shadow-sm.h-100
+            .card-body.p-4
+              .d-flex.align-items-center.justify-content-between.mb-1
+                h2.h5.mb-0 Grading categories
+                span#weightTotal.badge.rounded-pill.text-bg-secondary(aria-live="polite") Total: —
+              p.small.text-body-secondary.mb-3 From your syllabus, e.g. Homework 30%, Exams 50%, Final 20%. Weights must total 100%.
+
+              if categoryErrors.length
+                .alert.alert-danger.py-2(role="alert")
+                  each msg in categoryErrors
+                    div= msg
+
+              #categoryRows
+                each cat, i in categories
+                  +categoryRow(cat, rowErrors[i])
+
+              button#addCategory.btn.btn-sm.btn-outline-primary(type="button")
+                i.bi.bi-plus-lg.me-1(aria-hidden="true")
+                | Add category
+
+              template#categoryRowTemplate
+                +categoryRow({ id: null, name: '', weight: '' })
+
+      .d-flex.gap-2.mt-4
+        button.btn.btn-primary(type="submit")
+          i.bi.bi-check-lg.me-1(aria-hidden="true")
+          | #{course ? 'Save changes' : 'Add course'}
+        a.btn.btn-outline-secondary(href=(course ? `/courses/${course.id}` : '/courses')) Cancel
+
+block scripts
+  script(src="/js/course-form.js")

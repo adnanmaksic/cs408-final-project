@@ -1,0 +1,68 @@
+extends ../layout
+
+block content
+  .container.py-5
+    .d-flex.flex-wrap.align-items-center.justify-content-between.gap-3.mb-4
+      h1.h2.mb-0 My Courses
+      .d-flex.flex-wrap.align-items-center.gap-2
+        if terms.length
+          form.d-flex.align-items-center.gap-2(method="get" action="/courses")
+            label.visually-hidden(for="term") Term
+            select#term.form-select(name="term" data-autosubmit)
+              option(value="" selected=!term) All terms
+              each t in terms
+                option(value=t selected=(t === term))= t
+            noscript
+              button.btn.btn-outline-secondary(type="submit") Show
+        a.btn.btn-primary(href="/courses/new")
+          i.bi.bi-plus-lg.me-1(aria-hidden="true")
+          | Add Course
+
+    if !courses.length
+      .card.border-0.bg-body-tertiary.text-center
+        .card-body.p-5
+          i.bi.bi-journal-plus.display-4.text-primary(aria-hidden="true")
+          h2.h5.mt-3 No courses yet
+          p.text-body-secondary Add your first course and its grading categories to get started.
+          a.btn.btn-primary(href="/courses/new") Add Course
+    else
+      .card.border-0.shadow-sm
+        .table-responsive
+          table.table.table-hover.align-middle.mb-0
+            thead.table-light
+              tr
+                th(scope="col") Code
+                th(scope="col") Course
+                th.d-none.d-md-table-cell(scope="col") Term
+                th.d-none.d-sm-table-cell(scope="col") Grade
+                th.text-end(scope="col") Actions
+            tbody
+              each c in courses
+                tr
+                  td
+                    span.course-badge(style=`--course-color: ${c.color}`)= c.code
+                  td
+                    a.fw-semibold.text-decoration-none(href=`/courses/${c.id}`)= c.name
+                    .small.text-body-secondary
+                      if c.instructor
+                        | #{c.instructor} ·#{' '}
+                      | #{c.category_count} #{c.category_count === 1 ? 'category' : 'categories'}, #{c.assignment_count} #{c.assignment_count === 1 ? 'assignment' : 'assignments'}
+                  td.d-none.d-md-table-cell= c.term
+                  td.d-none.d-sm-table-cell
+                    span.text-body-secondary(title="Grades are a Work in Progress") —
+                  td.text-end.text-nowrap
+                    a.btn.btn-sm.btn-outline-primary.me-1(href=`/courses/${c.id}/edit` aria-label=`Edit ${c.code}`)
+                      i.bi.bi-pencil(aria-hidden="true")
+                      span.d-none.d-lg-inline.ms-1 Edit
+                    button.btn.btn-sm.btn-outline-danger(type="button" data-bs-toggle="modal" data-bs-target="#deleteCourseModal"
+                      data-course-name=`${c.code}: ${c.name}` data-course-action=`/courses/${c.id}/delete`
+                      data-course-categories=c.category_count data-course-assignments=c.assignment_count
+                      aria-label=`Delete ${c.code}`)
+                      i.bi.bi-trash(aria-hidden="true")
+                      span.d-none.d-lg-inline.ms-1 Delete
+
+  include _delete-modal
+
+block scripts
+  script(src="/js/delete-modal.js")
+  script(src="/js/autosubmit.js")

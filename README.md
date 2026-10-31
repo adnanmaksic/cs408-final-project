@@ -1,5 +1,7 @@
 # Assignment & Grade Tracker
 
+[![CI](https://github.com/adnanmaksic/cs408-final-project/actions/workflows/ci.yml/badge.svg)](https://github.com/adnanmaksic/cs408-final-project/actions/workflows/ci.yml)
+
 A full-stack web app that helps college students plan their assignments and track their grades: what's due this week, a live weighted grade for every course, and a "what do I need?" calculator.
 
 Built with Node.js, Express, SQLite (better-sqlite3), Pug and Bootstrap 5, and deployed on AWS EC2 behind nginx. Accounts use bcrypt-hashed passwords and server-side sessions stored in SQLite.
@@ -17,7 +19,7 @@ cd cs408-final-project
 ./start.sh
 ```
 
-Then open <http://localhost:3000/>. Use `PORT=8080 ./start.sh` for a different port. Run the tests with `npm test`.
+Then open <http://localhost:3000/>. Use `PORT=8080 ./start.sh` for a different port. Run the tests with `npm test`; GitHub Actions also runs them on every push and pull request (see `.github/workflows/ci.yml`).
 
 `start.sh` creates the SQLite database at `data/grade-tracker.db` and a demo account you can log in with:
 
@@ -69,6 +71,7 @@ Or from your laptop (runs the tests, copies the code, restarts and checks `/api/
 | --- | --- |
 | `app.js`, `server.js` | Express app and the entry point that starts it |
 | `routes/pages.js` | Landing, About, Dashboard, and placeholders for pages planned in later checkpoints |
+| `routes/courses.js`, `lib/courses.js` | Course List, Add/Edit Course with grading categories (weights must total 100%), Delete |
 | `routes/auth.js` | Register, Log In and Log Out (bcrypt, express-validator, sessions) |
 | `lib/auth.js` | Loads the logged-in user, `requireLogin` for protected routes, flash messages |
 | `lib/db.js`, `lib/session-store.js` | SQLite connection and the SQLite-backed session store |
@@ -78,6 +81,7 @@ Or from your laptop (runs the tests, copies the code, restarts and checks `/api/
 | `views/*.pug` | Page templates |
 | `public/` | CSS and favicon |
 | `tests/` | Jest + Supertest tests |
+| `.github/workflows/ci.yml` | CI: tests on Node 20 and 22, plus a `./start.sh` smoke test |
 | `start.sh` | Checks tools, installs dependencies, starts the app |
 | `scripts/setup.sh` | Installs packages on a fresh EC2 instance and clones the app |
 | `scripts/configure.sh` | Creates `.env`, database, systemd service and nginx config |

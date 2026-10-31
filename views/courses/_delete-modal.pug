@@ -1,0 +1,24 @@
+//- Shared "Delete course?" confirmation. Any button with
+//- data-bs-toggle="modal" data-bs-target="#deleteCourseModal" opens it, and
+//- public/js/delete-modal.js fills in the course from the button's data-* attributes.
+#deleteCourseModal.modal.fade(tabindex="-1" aria-labelledby="deleteCourseTitle" aria-hidden="true")
+  .modal-dialog.modal-dialog-centered
+    .modal-content.border-0.shadow
+      .modal-header
+        h2#deleteCourseTitle.modal-title.h5
+          i.bi.bi-exclamation-triangle-fill.text-danger.me-2(aria-hidden="true")
+          | Delete course?
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+      .modal-body
+        p.mb-2
+          | Delete
+          strong.ms-1(data-field="name") this course
+          | ?
+        p.text-body-secondary.small.mb-0(data-field="details")
+          | Its grading categories and assignments will be deleted too. This can't be undone.
+      .modal-footer
+        button.btn.btn-outline-secondary(type="button" data-bs-dismiss="modal") Cancel
+        form(method="post" action="#" data-field="form")
+          button.btn.btn-danger(type="submit")
+            i.bi.bi-trash.me-1(aria-hidden="true")
+            | Delete course
