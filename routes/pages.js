@@ -2,6 +2,7 @@ const express = require('express');
 const pages = require('../lib/pages');
 const { getDb } = require('../lib/db');
 const { requireLogin } = require('../lib/auth');
+const { toWallClock } = require('../lib/dates');
 
 const router = express.Router();
 
@@ -37,12 +38,13 @@ router.get('/dashboard', requireLogin, (req, res) => {
   const db = getDb();
   const now = new Date();
   const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const [from, to] = [toWallClock(now), toWallClock(weekAhead)];
   const stats = {
     courses: db.prepare('SELECT COUNT(*) FROM courses WHERE user_id = ?').pluck().get(req.user.id),
     assignments: db.prepare('SELECT COUNT(*) FROM assignments WHERE user_id = ?').pluck().get(req.user.id),
     dueThisWeek: db.prepare(`SELECT COUNT(*) FROM assignments
       WHERE user_id = ? AND status NOT IN ('submitted', 'graded') AND due_date BETWEEN ? AND ?`)
-      .pluck().get(req.user.id, now.toISOString(), weekAhead.toISOString()),
+      .pluck().get(req.user.id, from, to),
   };
   res.render('dashboard', { title: 'Dashboard', stats });
 });

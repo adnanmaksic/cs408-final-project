@@ -10,6 +10,8 @@ WorkingDirectory=/opt/grade-tracker
 Environment=NODE_ENV=production
 Environment=PORT=3000
 Environment=HOST=127.0.0.1
+# Overdue checks use this timezone (EC2 servers default to UTC).
+Environment=TZ=America/Boise
 # Optional: created by scripts/configure.sh
 EnvironmentFile=-/opt/grade-tracker/.env
 ExecStart=/usr/bin/node server.js

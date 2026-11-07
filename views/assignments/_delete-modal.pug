@@ -1,0 +1,22 @@
+//- Shared "Delete assignment?" confirmation. public/js/delete-modal.js fills it
+//- in from the data-* attributes of the Delete button that opened it.
+#deleteAssignmentModal.modal.fade(tabindex="-1" aria-labelledby="deleteAssignmentTitle" aria-hidden="true")
+  .modal-dialog.modal-dialog-centered
+    .modal-content.border-0.shadow
+      .modal-header
+        h2#deleteAssignmentTitle.modal-title.h5
+          i.bi.bi-exclamation-triangle-fill.text-danger.me-2(aria-hidden="true")
+          | Delete assignment?
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+      .modal-body
+        p.mb-2
+          | Delete
+          strong.ms-1(data-field="name") this assignment
+          | ?
+        p.text-body-secondary.small.mb-0 This can't be undone.
+      .modal-footer
+        button.btn.btn-outline-secondary(type="button" data-bs-dismiss="modal") Cancel
+        form(method="post" action="#" data-field="form")
+          button.btn.btn-danger(type="submit")
+            i.bi.bi-trash.me-1(aria-hidden="true")
+            | Delete assignment

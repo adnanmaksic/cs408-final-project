@@ -72,6 +72,8 @@ Or from your laptop (runs the tests, copies the code, restarts and checks `/api/
 | `app.js`, `server.js` | Express app and the entry point that starts it |
 | `routes/pages.js` | Landing, About, Dashboard, and placeholders for pages planned in later checkpoints |
 | `routes/courses.js`, `lib/courses.js` | Course List, Add/Edit Course with grading categories (weights must total 100%), Delete |
+| `routes/assignments.js`, `lib/assignments.js` | Add/Edit Assignment, mark submitted, Delete |
+| `lib/dates.js` | Due dates, stored as wall-clock times like `2026-11-20T23:59` |
 | `routes/auth.js` | Register, Log In and Log Out (bcrypt, express-validator, sessions) |
 | `lib/auth.js` | Loads the logged-in user, `requireLogin` for protected routes, flash messages |
 | `lib/db.js`, `lib/session-store.js` | SQLite connection and the SQLite-backed session store |

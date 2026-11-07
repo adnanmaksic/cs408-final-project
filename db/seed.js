@@ -3,17 +3,18 @@
 //   npm run db:seed
 const bcrypt = require('bcrypt');
 const { getDb } = require('../lib/db');
+const { toWallClock } = require('../lib/dates');
 const { migrate } = require('./migrate');
 
 const DEMO_EMAIL = 'demo@gradetracker.test';
 const DEMO_PASSWORD = 'demo-password';
 
-// ISO date `days` from now at the given hour, so the demo always has upcoming work.
+// Due date `days` from now at the given hour, so the demo always has upcoming work.
 function daysFromNow(days, hour = 23, minute = 59) {
   const d = new Date();
   d.setDate(d.getDate() + days);
   d.setHours(hour, minute, 0, 0);
-  return d.toISOString();
+  return toWallClock(d);
 }
 
 const COURSES = [

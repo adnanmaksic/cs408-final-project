@@ -17,7 +17,10 @@ block content
           if course.instructor
             | #{course.instructor} ·#{' '}
           | #{course.term} · Target #{course.target_grade}%
-      .d-flex.gap-2
+      .d-flex.flex-wrap.gap-2
+        a.btn.btn-primary(href=`/assignments/new?course_id=${course.id}`)
+          i.bi.bi-plus-lg.me-1(aria-hidden="true")
+          | Add Assignment
         a.btn.btn-outline-primary(href=`/courses/${course.id}/edit`)
           i.bi.bi-pencil.me-1(aria-hidden="true")
           | Edit
@@ -27,30 +30,65 @@ block content
           i.bi.bi-trash.me-1(aria-hidden="true")
           | Delete
 
-    .card.border-0.shadow-sm
-      .card-body.p-4
-        h2.h5.mb-3 Grading categories
-        .table-responsive
-          table.table.align-middle.mb-0
-            thead
-              tr
-                th(scope="col") Category
-                th(scope="col") Weight
-                th.text-end(scope="col") Assignments
-            tbody
-              each cat in categories
-                tr
-                  td= cat.name
-                  td
-                    .d-flex.align-items-center.gap-2
-                      .progress.flex-grow-1(style="max-width: 10rem; height: 0.5rem" role="progressbar" aria-label=`${cat.name} weight` aria-valuenow=cat.weight aria-valuemin="0" aria-valuemax="100")
-                        .progress-bar(style=`width: ${cat.weight}%; background-color: ${course.color}`)
-                      span #{cat.weight}%
-                  td.text-end= cat.assignment_count
-        p.small.text-body-secondary.mt-3.mb-0
-          | Assignments for each category and the course grade are a Work in Progress.
+    each cat in categories
+      .card.border-0.shadow-sm.mb-4
+        .card-body.p-4
+          .d-flex.flex-wrap.align-items-center.justify-content-between.gap-2.mb-3
+            h2.h5.mb-0
+              | #{cat.name}
+              span.badge.rounded-pill.text-bg-light.border.ms-2 #{cat.weight}%
+            a.btn.btn-sm.btn-outline-primary(href=`/assignments/new?course_id=${course.id}&category_id=${cat.id}` aria-label=`Add assignment to ${cat.name}`)
+              i.bi.bi-plus-lg.me-1(aria-hidden="true")
+              | Add
+
+          if !cat.assignments.length
+            p.text-body-secondary.small.mb-0 No assignments yet.
+          else
+            .table-responsive
+              table.table.table-hover.align-middle.mb-0
+                thead
+                  tr
+                    th(scope="col") Assignment
+                    th(scope="col") Due
+                    th(scope="col") Status
+                    th(scope="col") Score
+                    th.text-end(scope="col") Actions
+                tbody
+                  each a in cat.assignments
+                    - const overdue = isOverdue(a)
+                    - const status = assignmentStatuses[a.status]
+                    tr
+                      td
+                        a.fw-semibold.text-decoration-none(href=`/assignments/${a.id}/edit`)= a.title
+                        if a.description
+                          .small.text-body-secondary= a.description
+                      td.text-nowrap(class={ 'text-danger fw-semibold': overdue })
+                        = formatDue(a.due_date)
+                        if overdue
+                          .small Overdue
+                      td
+                        span.badge(class=status.badge)= status.label
+                      td.text-nowrap
+                        if a.points_earned === null
+                          span.text-body-secondary — / #{a.points_possible}
+                        else
+                          | #{a.points_earned} / #{a.points_possible}
+                      td.text-end.text-nowrap
+                        if ['not_started', 'in_progress'].includes(a.status)
+                          form.d-inline(method="post" action=`/assignments/${a.id}/submit`)
+                            button.btn.btn-sm.btn-outline-success.me-1(type="submit" aria-label=`Mark ${a.title} as submitted`)
+                              i.bi.bi-check-lg(aria-hidden="true")
+                              span.d-none.d-lg-inline.ms-1 Mark submitted
+                        a.btn.btn-sm.btn-outline-primary.me-1(href=`/assignments/${a.id}/edit` aria-label=`Edit ${a.title}`)
+                          i.bi.bi-pencil(aria-hidden="true")
+                        button.btn.btn-sm.btn-outline-danger(type="button" data-bs-toggle="modal" data-bs-target="#deleteAssignmentModal"
+                          data-delete-name=a.title data-delete-action=`/assignments/${a.id}/delete` aria-label=`Delete ${a.title}`)
+                          i.bi.bi-trash(aria-hidden="true")
+
+    p.small.text-body-secondary.mb-0 The course grade is a Work in Progress.
 
   include _delete-modal
+  include ../assignments/_delete-modal
 
 block scripts
   script(src="/js/delete-modal.js")

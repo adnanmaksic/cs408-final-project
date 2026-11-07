@@ -1,0 +1,101 @@
+extends ../layout
+
+//- Text input with inline validation error.
+mixin input(name, label, attrs)
+  - const err = errors[name]
+  label.form-label(for=name)= label
+  input.form-control(id=name name=name value=values[name] class={ 'is-invalid': err } aria-describedby=(err ? `${name}-error` : undefined))&attributes(attrs)
+  if err
+    .invalid-feedback(id=`${name}-error`)= err.msg
+
+block content
+  .container.py-5
+    nav(aria-label="breadcrumb")
+      ol.breadcrumb
+        li.breadcrumb-item
+          a(href="/courses") My Courses
+        li.breadcrumb-item.active(aria-current="page")= assignment ? 'Edit Assignment' : 'Add Assignment'
+
+    h1.h2.mb-4= assignment ? 'Edit Assignment' : 'Add Assignment'
+
+    if !courseOptions.length
+      .card.border-0.bg-body-tertiary.text-center
+        .card-body.p-5
+          i.bi.bi-journal-plus.display-4.text-primary(aria-hidden="true")
+          h2.h5.mt-3 Add a course first
+          p.text-body-secondary Assignments belong to a course and one of its grading categories.
+          a.btn.btn-primary(href="/courses/new") Add Course
+    else
+      .row.justify-content-center
+        .col-lg-9
+          .card.border-0.shadow-sm
+            .card-body.p-4
+              form#assignmentForm(method="post" action=(assignment ? `/assignments/${assignment.id}` : '/assignments') novalidate)
+                .row.g-3
+                  .col-12
+                    +input('title', 'Title', { required: true, maxlength: 200, placeholder: 'e.g. Homework 3' })
+
+                  .col-sm-6
+                    - const courseErr = errors.course_id
+                    label.form-label(for="course_id") Course
+                    select#course_id.form-select(name="course_id" required class={ 'is-invalid': courseErr })
+                      option(value="") Choose a course
+                      each c in courseOptions
+                        option(value=c.id selected=(String(c.id) === String(values.course_id)))= `${c.code}: ${c.name}`
+                    if courseErr
+                      .invalid-feedback= courseErr.msg
+
+                  .col-sm-6
+                    - const categoryErr = errors.category_id
+                    label.form-label(for="category_id") Category
+                    select#category_id.form-select(name="category_id" required class={ 'is-invalid': categoryErr })
+                      option(value="") Choose a category
+                      each c in courseOptions
+                        each cat in c.categories
+                          option(value=cat.id data-course=c.id selected=(String(cat.id) === String(values.category_id)))= `${cat.name} (${cat.weight}%)`
+                    if categoryErr
+                      .invalid-feedback= categoryErr.msg
+
+                  .col-sm-6
+                    +input('due_date', 'Due date and time', { type: 'datetime-local', required: true })
+
+                  .col-sm-6
+                    - const statusErr = errors.status
+                    label.form-label(for="status") Status
+                    select#status.form-select(name="status" class={ 'is-invalid': statusErr })
+                      each info, key in assignmentStatuses
+                        option(value=key selected=(key === values.status))= info.label
+                    if statusErr
+                      .invalid-feedback= statusErr.msg
+
+                  .col-sm-6
+                    +input('points_possible', 'Points possible', { type: 'number', min: 0, step: 'any', required: true })
+
+                  .col-sm-6
+                    +input('points_earned', 'Points earned (optional)', { type: 'number', min: 0, step: 'any' })
+                    .form-text Entering a score marks the assignment as graded.
+
+                  .col-12
+                    - const notesErr = errors.description
+                    label.form-label(for="description") Notes (optional)
+                    textarea#description.form-control(name="description" rows="3" maxlength="2000" class={ 'is-invalid': notesErr })= values.description
+                    if notesErr
+                      .invalid-feedback= notesErr.msg
+
+                .d-flex.flex-wrap.gap-2.mt-4
+                  button.btn.btn-primary(type="submit")
+                    i.bi.bi-check-lg.me-1(aria-hidden="true")
+                    | #{assignment ? 'Save changes' : 'Add assignment'}
+                  a.btn.btn-outline-secondary(href=(assignment ? `/courses/${assignment.course_id}` : '/courses')) Cancel
+                  if assignment
+                    button.btn.btn-outline-danger.ms-auto(type="button" data-bs-toggle="modal" data-bs-target="#deleteAssignmentModal"
+                      data-delete-name=assignment.title data-delete-action=`/assignments/${assignment.id}/delete`)
+                      i.bi.bi-trash.me-1(aria-hidden="true")
+                      | Delete
+
+  if assignment
+    include _delete-modal
+
+block scripts
+  script(src="/js/assignment-form.js")
+  script(src="/js/delete-modal.js")

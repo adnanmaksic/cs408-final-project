@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { requireLogin } = require('../lib/auth');
 const courses = require('../lib/courses');
+const assignments = require('../lib/assignments');
 
 const router = express.Router();
 router.use('/courses', requireLogin);
@@ -141,10 +142,14 @@ router.post('/courses', courseRules, (req, res) => {
 });
 
 router.get('/courses/:id(\\d+)', loadCourse, (req, res) => {
+  const courseAssignments = assignments.listForCourse(req.user.id, req.course.id);
   res.render('courses/show', {
     title: req.course.code,
     course: req.course,
-    categories: courses.getCategories(req.course.id),
+    categories: courses.getCategories(req.course.id).map((cat) => ({
+      ...cat,
+      assignments: courseAssignments.filter((a) => a.category_id === cat.id),
+    })),
   });
 });
 

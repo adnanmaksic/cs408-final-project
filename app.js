@@ -9,6 +9,9 @@ const SqliteSessionStore = require('./lib/session-store');
 const { loadUser, flash } = require('./lib/auth');
 const authRouter = require('./routes/auth');
 const coursesRouter = require('./routes/courses');
+const assignmentsRouter = require('./routes/assignments');
+const { STATUSES, isOverdue } = require('./lib/assignments');
+const { formatDue } = require('./lib/dates');
 const pagesRouter = require('./routes/pages');
 
 const db = getDb();
@@ -27,6 +30,9 @@ app.locals.author = 'Ado Maksic';
 app.locals.course = 'CS 408 Full Stack Web Development';
 app.locals.githubUrl = 'https://github.com/adnanmaksic/cs408-final-project';
 app.locals.pages = pages;
+app.locals.assignmentStatuses = STATUSES;
+app.locals.isOverdue = isOverdue;
+app.locals.formatDue = formatDue;
 
 let sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -62,6 +68,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/', authRouter);
 app.use('/', coursesRouter);
+app.use('/', assignmentsRouter);
 app.use('/', pagesRouter);
 
 app.use((req, res) => {
