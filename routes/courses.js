@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { requireLogin } = require('../lib/auth');
 const courses = require('../lib/courses');
 const assignments = require('../lib/assignments');
+const grades = require('../lib/grades');
 
 const router = express.Router();
 router.use('/courses', requireLogin);
@@ -83,7 +84,22 @@ function validateCategories(rows, existing = []) {
   return { rows, rowErrors, errors };
 }
 
-function renderForm(res, { status = 200, course = null, values, categories, errors = {}, categoryErrors = [], rowErrors = [] }) {
+const DEFAULT_MINS = grades.DEFAULT_SCALE.slice(0, -1).map((s) => s.min);
+const scaleMins = (course) => grades.parseScale(course.letter_scale).slice(0, -1).map((s) => s.min);
+
+// Letter-grade cutoffs from the form (A down to D-). `json` is what gets stored:
+// null when the cutoffs match the standard scale or the form left them out.
+function readScale(reqBody) {
+  const raw = asList(reqBody.scale_min).map((v) => String(v).trim());
+  if (raw.length === 0) return { json: null, error: null };
+  const mins = raw.map((v) => (v === '' ? NaN : Number(v)));
+  const error = grades.checkScale(mins);
+  if (error) return { json: null, error };
+  const isDefault = mins.every((m, i) => m === DEFAULT_MINS[i]);
+  return { json: isDefault ? null : JSON.stringify(mins), error: null };
+}
+
+function renderForm(res, { status = 200, course = null, values, categories, errors = {}, categoryErrors = [], rowErrors = [], scaleError = null }) {
   res.status(status).render('courses/form', {
     title: course ? `Edit ${course.code}` : 'Add Course',
     course,
@@ -92,6 +108,9 @@ function renderForm(res, { status = 200, course = null, values, categories, erro
     errors,
     categoryErrors,
     rowErrors,
+    scaleError,
+    scaleLetters: grades.SCALE_LETTERS,
+    scaleMins: values.scale_min ? asList(values.scale_min) : DEFAULT_MINS,
   });
 }
 
@@ -119,7 +138,7 @@ router.get('/courses', (req, res) => {
     title: 'My Courses',
     terms,
     term,
-    courses: courses.listCourses(req.user.id, term),
+    courses: courses.listCourses(req.user.id, term).map((c) => ({ ...c, grade: courses.gradeSummary(req.user.id, c) })),
   });
 });
 
@@ -133,20 +152,23 @@ router.get('/courses/new', (req, res) => {
 router.post('/courses', courseRules, (req, res) => {
   const errors = validationResult(req).mapped();
   const { rows, rowErrors, errors: categoryErrors } = validateCategories(readCategories(req.body));
-  if (Object.keys(errors).length || categoryErrors.length) {
-    return renderForm(res, { status: 400, values: req.body, categories: rows, errors, categoryErrors, rowErrors });
+  const scale = readScale(req.body);
+  if (Object.keys(errors).length || categoryErrors.length || scale.error) {
+    return renderForm(res, { status: 400, values: req.body, categories: rows, errors, categoryErrors, rowErrors, scaleError: scale.error });
   }
-  const id = courses.saveCourse(req.user.id, req.body, rows);
+  const id = courses.saveCourse(req.user.id, { ...req.body, letter_scale: scale.json }, rows);
   req.session.flash = { type: 'success', message: `Added ${req.body.code}.` };
   res.redirect(`/courses/${id}`);
 });
 
 router.get('/courses/:id(\\d+)', loadCourse, (req, res) => {
   const courseAssignments = assignments.listForCourse(req.user.id, req.course.id);
+  const grade = courses.gradeSummary(req.user.id, req.course);
   res.render('courses/show', {
     title: req.course.code,
     course: req.course,
-    categories: courses.getCategories(req.course.id).map((cat) => ({
+    grade,
+    categories: grade.categories.map((cat) => ({
       ...cat,
       assignments: courseAssignments.filter((a) => a.category_id === cat.id),
     })),
@@ -156,7 +178,7 @@ router.get('/courses/:id(\\d+)', loadCourse, (req, res) => {
 router.get('/courses/:id(\\d+)/edit', loadCourse, (req, res) => {
   renderForm(res, {
     course: req.course,
-    values: req.course,
+    values: { ...req.course, scale_min: scaleMins(req.course) },
     categories: courses.getCategories(req.course.id),
   });
 });
@@ -165,7 +187,8 @@ router.post('/courses/:id(\\d+)', loadCourse, courseRules, (req, res) => {
   const errors = validationResult(req).mapped();
   const existing = courses.getCategories(req.course.id);
   const { rows, rowErrors, errors: categoryErrors } = validateCategories(readCategories(req.body), existing);
-  if (Object.keys(errors).length || categoryErrors.length) {
+  const scale = readScale(req.body);
+  if (Object.keys(errors).length || categoryErrors.length || scale.error) {
     // Keep each row's assignment count so the form can still lock in-use rows,
     // and put back any in-use category the user tried to remove.
     const counts = new Map(existing.map((c) => [c.id, c.assignment_count]));
@@ -177,11 +200,59 @@ router.post('/courses/:id(\\d+)', loadCourse, courseRules, (req, res) => {
         rowErrors.push({});
       }
     }
-    return renderForm(res, { status: 400, course: req.course, values: req.body, categories, errors, categoryErrors, rowErrors });
+    return renderForm(res, { status: 400, course: req.course, values: req.body, categories, errors, categoryErrors, rowErrors, scaleError: scale.error });
   }
-  courses.saveCourse(req.user.id, req.body, rows, req.course.id);
+  courses.saveCourse(req.user.id, { ...req.body, letter_scale: scale.json }, rows, req.course.id);
   req.session.flash = { type: 'success', message: `Saved ${req.body.code}.` };
   res.redirect(`/courses/${req.course.id}`);
+});
+
+// Grade Calculator. The target grade and what-if scores arrive in the query
+// string (target=93&whatif_12=18), so nothing is saved and the page works
+// without JavaScript; public/js/calculator.js updates it live as you type.
+router.get('/courses/:id(\\d+)/calculator', loadCourse, (req, res) => {
+  const errors = {};
+  let target = req.course.target_grade;
+  const rawTarget = req.query.target === undefined ? '' : String(req.query.target).trim();
+  if (rawTarget !== '') {
+    const n = Number(rawTarget);
+    if (Number.isFinite(n) && n >= 0 && n <= 100) target = n;
+    else errors.target = 'Target grade must be a number from 0 to 100.';
+  }
+
+  const courseAssignments = assignments.listForCourse(req.user.id, req.course.id);
+  const categories = courses.getCategories(req.course.id);
+  const ungraded = courseAssignments.filter((a) => !grades.isGraded(a));
+  const whatIf = {};
+  const whatIfValues = {};
+  for (const a of ungraded) {
+    const raw = req.query[`whatif_${a.id}`];
+    if (raw === undefined || String(raw).trim() === '') continue;
+    whatIfValues[a.id] = String(raw).trim();
+    const n = Number(raw);
+    if (Number.isFinite(n) && n >= 0) whatIf[a.id] = n;
+    else errors[`whatif_${a.id}`] = 'Enter 0 or more points.';
+  }
+
+  res.status(Object.keys(errors).length ? 400 : 200).render('courses/calculator', {
+    title: `${req.course.code} Grade Calculator`,
+    course: req.course,
+    target,
+    targetValue: rawTarget === '' ? req.course.target_grade : rawTarget,
+    errors,
+    current: courses.gradeSummary(req.user.id, req.course, { target }),
+    whatIfGrade: courses.gradeSummary(req.user.id, req.course, { target, whatIf }),
+    ungraded: ungraded.map((a) => ({ ...a, categoryName: (categories.find((c) => c.id === a.category_id) || {}).name })),
+    whatIfValues,
+    // Lets public/js/calculator.js redo the math in the browser with lib/grades.js.
+    calcData: {
+      categories: categories.map(({ id, name, weight }) => ({ id, name, weight })),
+      assignments: courseAssignments.map(({ id, category_id, points_possible, points_earned }) => ({
+        id, category_id, points_possible, points_earned,
+      })),
+      scale: grades.parseScale(req.course.letter_scale),
+    },
+  });
 });
 
 router.post('/courses/:id(\\d+)/delete', loadCourse, (req, res) => {

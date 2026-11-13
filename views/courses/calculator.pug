@@ -1,0 +1,100 @@
+extends ../layout
+
+block content
+  - const hasWhatIf = whatIfGrade.whatIfCount > 0
+  .container.py-5
+    nav(aria-label="breadcrumb")
+      ol.breadcrumb
+        li.breadcrumb-item
+          a(href="/courses") My Courses
+        li.breadcrumb-item
+          a(href=`/courses/${course.id}`)= course.code
+        li.breadcrumb-item.active(aria-current="page") Grade Calculator
+
+    .d-flex.flex-wrap.align-items-start.justify-content-between.gap-3.mb-4
+      div
+        span.course-badge.mb-2(style=`--course-color: ${course.color}`)= course.code
+        h1.h2.mb-1 Grade Calculator
+        p.text-body-secondary.mb-0 Try a target grade and what-if scores. Nothing here is saved.
+      a.btn.btn-outline-secondary(href=`/courses/${course.id}`)
+        i.bi.bi-arrow-left.me-1(aria-hidden="true")
+        | Back to #{course.code}
+
+    form#calculator(method="get" action=`/courses/${course.id}/calculator` novalidate)
+      .row.g-4.mb-4
+        .col-md-4
+          .card.border-0.shadow-sm.h-100
+            .card-body.p-4
+              .text-body-secondary.small.text-uppercase.fw-semibold Current grade
+              .d-flex.align-items-baseline.gap-2
+                span.display-6.fw-bold= grades.formatPercent(current.percent)
+                if current.letter
+                  span.badge.fs-6.text-bg-primary= current.letter
+              .small.text-body-secondary From scores you've entered.
+        .col-md-4
+          .card.border-0.shadow-sm.h-100
+            .card-body.p-4
+              label.text-body-secondary.small.text-uppercase.fw-semibold.form-label(for="target") Target grade
+              .input-group(class={ 'has-validation': errors.target })
+                input#target.form-control.form-control-lg(type="number" name="target" value=targetValue min="0" max="100" step="any" class={ 'is-invalid': errors.target } aria-describedby=(errors.target ? 'target-error' : undefined))
+                span.input-group-text %
+                if errors.target
+                  .invalid-feedback#target-error= errors.target
+              .small.text-body-secondary.mt-2 The course target is #{grades.formatPercent(course.target_grade)}.
+        .col-md-4
+          .card.border-0.shadow-sm.h-100
+            .card-body.p-4
+              .text-body-secondary.small.text-uppercase.fw-semibold With what-if scores
+              .d-flex.align-items-baseline.gap-2
+                span.display-6.fw-bold#whatIfPercent= hasWhatIf ? grades.formatPercent(whatIfGrade.percent) : '—'
+                span.badge.fs-6.text-bg-secondary#whatIfLetter(class={ 'd-none': !hasWhatIf || !whatIfGrade.letter })= whatIfGrade.letter
+              .small.text-body-secondary#whatIfNote
+                | #{hasWhatIf ? `Using ${whatIfGrade.whatIfCount} what-if score${whatIfGrade.whatIfCount === 1 ? '' : 's'}.` : 'Type scores below to try them out.'}
+
+      .alert.needed-box.mb-4(class=`needed-${whatIfGrade.needed.status}` role="status" aria-live="polite")
+        .d-flex.align-items-center.gap-3
+          i.bi.bi-bullseye.fs-3(aria-hidden="true")
+          div
+            .fw-semibold Needed on remaining work
+            div#neededText= whatIfGrade.neededText
+
+      .card.border-0.shadow-sm
+        .card-body.p-4
+          h2.h5 What-if scores
+          if !ungraded.length
+            p.text-body-secondary.mb-0 Every assignment in this course is graded, so there's nothing left to try out.
+          else
+            p.small.text-body-secondary Enter the points you expect on ungraded work. Leave a box empty to count it as still to come.
+            .table-responsive
+              table.table.align-middle.mb-0
+                thead
+                  tr
+                    th(scope="col") Assignment
+                    th(scope="col") Category
+                    th(scope="col") Due
+                    th(scope="col" style="min-width: 11rem") What-if score
+                tbody
+                  each a in ungraded
+                    - const field = `whatif_${a.id}`
+                    tr
+                      td.fw-semibold= a.title
+                      td= a.categoryName
+                      td.text-nowrap= formatDue(a.due_date)
+                      td
+                        .input-group.input-group-sm(class={ 'has-validation': errors[field] })
+                          input.form-control.what-if(id=field type="number" name=field value=whatIfValues[a.id] min="0" step="any" placeholder="—" data-assignment-id=a.id class={ 'is-invalid': errors[field] } aria-label=`What-if points for ${a.title}`)
+                          span.input-group-text / #{a.points_possible}
+                          if errors[field]
+                            .invalid-feedback= errors[field]
+
+          .d-flex.flex-wrap.gap-2.mt-4
+            button.btn.btn-primary(type="submit")
+              i.bi.bi-calculator.me-1(aria-hidden="true")
+              | Calculate
+            a.btn.btn-outline-secondary(href=`/courses/${course.id}/calculator`) Reset
+
+    script#calcData(type="application/json")!= JSON.stringify(calcData).replace(/</g, '\\u003c')
+
+block scripts
+  script(src="/js/grades.js")
+  script(src="/js/calculator.js")

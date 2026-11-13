@@ -71,7 +71,8 @@ Or from your laptop (runs the tests, copies the code, restarts and checks `/api/
 | --- | --- |
 | `app.js`, `server.js` | Express app and the entry point that starts it |
 | `routes/pages.js` | Landing, About, Dashboard, and placeholders for pages planned in later checkpoints |
-| `routes/courses.js`, `lib/courses.js` | Course List, Add/Edit Course with grading categories (weights must total 100%), Delete |
+| `routes/courses.js`, `lib/courses.js` | Course List, Course Detail, Add/Edit Course with grading categories (weights must total 100%) and letter-grade cutoffs, Delete, Grade Calculator |
+| `lib/grades.js` | Grade math: weighted current grade, letter grade, and the average needed on remaining work. Also runs in the browser for the calculator's live what-if scores |
 | `routes/assignments.js`, `lib/assignments.js` | Add/Edit Assignment, mark submitted, Delete |
 | `lib/dates.js` | Due dates, stored as wall-clock times like `2026-11-20T23:59` |
 | `routes/auth.js` | Register, Log In and Log Out (bcrypt, express-validator, sessions) |
@@ -81,7 +82,7 @@ Or from your laptop (runs the tests, copies the code, restarts and checks `/api/
 | `db/seed.js` | Demo account with sample courses, categories and assignments |
 | `views/layout.pug` | Shared layout: Bootstrap navbar used by every page |
 | `views/*.pug` | Page templates |
-| `public/` | CSS and favicon |
+| `public/` | CSS, favicon and small page scripts |
 | `tests/` | Jest + Supertest tests |
 | `.github/workflows/ci.yml` | CI: tests on Node 20 and 22, plus a `./start.sh` smoke test |
 | `start.sh` | Checks tools, installs dependencies, starts the app |

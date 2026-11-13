@@ -174,3 +174,34 @@ button.nav-pill {
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
 }
+
+/* Grade Calculator: the "needed on remaining work" box changes color with the result. */
+.needed-box {
+  border: 1px solid var(--bs-primary-border-subtle);
+  background: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary-text-emphasis);
+}
+
+.needed-box.needed-secured,
+.needed-box.needed-complete {
+  border-color: var(--bs-success-border-subtle);
+  background: var(--bs-success-bg-subtle);
+  color: var(--bs-success-text-emphasis);
+}
+
+.needed-box.needed-unreachable {
+  border-color: var(--bs-danger-border-subtle);
+  background: var(--bs-danger-bg-subtle);
+  color: var(--bs-danger-text-emphasis);
+}
+
+/* Course form: letter-grade cutoffs */
+#letterScale > summary {
+  cursor: pointer;
+}
+
+.scale-letter {
+  min-width: 2.6rem;
+  justify-content: center;
+  font-weight: 600;
+}

@@ -21,6 +21,9 @@ block content
         a.btn.btn-primary(href=`/assignments/new?course_id=${course.id}`)
           i.bi.bi-plus-lg.me-1(aria-hidden="true")
           | Add Assignment
+        a.btn.btn-outline-primary(href=`/courses/${course.id}/calculator`)
+          i.bi.bi-calculator.me-1(aria-hidden="true")
+          | Grade Calculator
         a.btn.btn-outline-primary(href=`/courses/${course.id}/edit`)
           i.bi.bi-pencil.me-1(aria-hidden="true")
           | Edit
@@ -30,6 +33,28 @@ block content
           i.bi.bi-trash.me-1(aria-hidden="true")
           | Delete
 
+    - const pct = grade.percent === null ? 0 : Math.max(0, Math.min(100, grade.percent))
+    .card.border-0.shadow-sm.mb-4
+      .card-body.p-4
+        .row.g-4.align-items-center
+          .col-md-5
+            .text-body-secondary.small.text-uppercase.fw-semibold Current grade
+            .d-flex.align-items-baseline.gap-2
+              span.display-6.fw-bold#currentGrade= grades.formatPercent(grade.percent)
+              if grade.letter
+                span.badge.fs-6.text-bg-primary= grade.letter
+            if grade.percent === null
+              .small.text-body-secondary No graded work yet. Scores you enter will show up here.
+            else if grade.gradedWeight < 100
+              .small.text-body-secondary Based on #{grades.round(grade.gradedWeight)}% of the course graded so far.
+          .col-md-7
+            .progress(role="progressbar" aria-label="Current grade" aria-valuenow=grades.round(pct) aria-valuemin="0" aria-valuemax="100" style="height: 1.25rem")
+              .progress-bar(style=`width: ${pct}%; background-color: ${course.color}`)
+            .d-flex.justify-content-between.small.text-body-secondary.mt-2
+              span Target #{grades.formatPercent(course.target_grade)}
+              a.text-decoration-none(href=`/courses/${course.id}/calculator`) What do I need?
+            p.mb-0.mt-2.small= grade.neededText
+
     each cat in categories
       .card.border-0.shadow-sm.mb-4
         .card-body.p-4
@@ -37,6 +62,11 @@ block content
             h2.h5.mb-0
               | #{cat.name}
               span.badge.rounded-pill.text-bg-light.border.ms-2 #{cat.weight}%
+              if cat.percent === null
+                span.small.fw-normal.text-body-secondary.ms-2 No grades yet
+              else
+                span.small.fw-semibold.ms-2 #{grades.formatPercent(cat.percent)}
+                span.small.fw-normal.text-body-secondary.ms-1 (#{grades.round(cat.earned)} / #{grades.round(cat.possible)} pts)
             a.btn.btn-sm.btn-outline-primary(href=`/assignments/new?course_id=${course.id}&category_id=${cat.id}` aria-label=`Add assignment to ${cat.name}`)
               i.bi.bi-plus-lg.me-1(aria-hidden="true")
               | Add
@@ -84,8 +114,6 @@ block content
                         button.btn.btn-sm.btn-outline-danger(type="button" data-bs-toggle="modal" data-bs-target="#deleteAssignmentModal"
                           data-delete-name=a.title data-delete-action=`/assignments/${a.id}/delete` aria-label=`Delete ${a.title}`)
                           i.bi.bi-trash(aria-hidden="true")
-
-    p.small.text-body-secondary.mb-0 The course grade is a Work in Progress.
 
   include _delete-modal
   include ../assignments/_delete-modal

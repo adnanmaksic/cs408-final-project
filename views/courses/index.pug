@@ -48,8 +48,12 @@ block content
                         | #{c.instructor} ·#{' '}
                       | #{c.category_count} #{c.category_count === 1 ? 'category' : 'categories'}, #{c.assignment_count} #{c.assignment_count === 1 ? 'assignment' : 'assignments'}
                   td.d-none.d-md-table-cell= c.term
-                  td.d-none.d-sm-table-cell
-                    span.text-body-secondary(title="Grades are a Work in Progress") —
+                  td.d-none.d-sm-table-cell.text-nowrap
+                    if c.grade.percent === null
+                      span.text-body-secondary(title="No graded work yet") —
+                    else
+                      span.fw-semibold= grades.formatPercent(c.grade.percent)
+                      span.badge.text-bg-light.border.ms-2= c.grade.letter
                   td.text-end.text-nowrap
                     a.btn.btn-sm.btn-outline-primary.me-1(href=`/courses/${c.id}/edit` aria-label=`Edit ${c.code}`)
                       i.bi.bi-pencil(aria-hidden="true")

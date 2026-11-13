@@ -94,6 +94,22 @@ block content
               template#categoryRowTemplate
                 +categoryRow({ id: null, name: '', weight: '' })
 
+      .card.border-0.shadow-sm.mt-4
+        .card-body.p-4
+          details#letterScale(open=!!scaleError)
+            summary.h5.mb-0 Letter grade cutoffs
+            p.small.text-body-secondary.mt-2.mb-3
+              | The lowest percentage for each letter. The standard scale is filled in; change it if your syllabus uses different cutoffs. Anything below D- is an F.
+            if scaleError
+              .alert.alert-danger.py-2(role="alert")= scaleError
+            .row.g-2
+              each letter, i in scaleLetters
+                .col-4.col-sm-3.col-lg-2
+                  .input-group.input-group-sm
+                    label.input-group-text.scale-letter(for=`scale_${i}`)= letter
+                    input.form-control(id=`scale_${i}` type="number" name="scale_min" value=scaleMins[i] min="0" max="100" step="any" required aria-label=`Lowest percentage for ${letter}`)
+                    span.input-group-text %
+
       .d-flex.gap-2.mt-4
         button.btn.btn-primary(type="submit")
           i.bi.bi-check-lg.me-1(aria-hidden="true")

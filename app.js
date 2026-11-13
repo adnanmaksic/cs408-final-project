@@ -33,6 +33,7 @@ app.locals.pages = pages;
 app.locals.assignmentStatuses = STATUSES;
 app.locals.isOverdue = isOverdue;
 app.locals.formatDue = formatDue;
+app.locals.grades = require('./lib/grades');
 
 let sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) {
@@ -44,6 +45,8 @@ if (!sessionSecret) {
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
+// The grade math runs in the browser too (Grade Calculator), from the same file.
+app.get('/js/grades.js', (req, res) => res.sendFile(path.join(__dirname, 'lib', 'grades.js')));
 app.use(express.urlencoded({ extended: false }));
 app.use(session({
   name: 'gt.sid',
