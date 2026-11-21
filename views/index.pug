@@ -49,7 +49,4 @@ block content
                 span
                   i.bi.me-2(class=`bi-${page.icon}` aria-hidden="true")
                   | #{page.title}
-                if page.checkpoint
-                  span.badge.text-bg-secondary Coming soon
-                else
-                  span.badge.text-bg-success Ready
+                i.bi.bi-chevron-right.text-body-secondary(aria-hidden="true")

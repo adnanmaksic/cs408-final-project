@@ -1,0 +1,87 @@
+extends ../layout
+
+block content
+  .container.py-5
+    nav(aria-label="breadcrumb")
+      ol.breadcrumb
+        li.breadcrumb-item
+          a(href=editSearchUrl) Assignment Search
+        li.breadcrumb-item.active(aria-current="page") Results
+
+    .d-flex.flex-wrap.align-items-start.justify-content-between.gap-3.mb-3
+      div
+        h1.h2.mb-1 Search Results
+        p.text-body-secondary.mb-0#resultCount
+          | #{results.length}#{truncated ? '+' : ''} #{results.length === 1 ? 'assignment matches' : 'assignments match'}
+          if !activeFilters.length
+            |  (no filters, so this is everything you've added).
+      .d-flex.flex-wrap.gap-2
+        a.btn.btn-outline-primary(href=editSearchUrl)
+          i.bi.bi-sliders.me-1(aria-hidden="true")
+          | Change filters
+        a.btn.btn-outline-secondary(href="/assignments/search") New search
+
+    if activeFilters.length
+      .d-flex.flex-wrap.gap-2.mb-4(aria-label="Filters in use")
+        each f in activeFilters
+          span.badge.rounded-pill.text-bg-light.border.fw-normal.filter-chip= f
+
+    if truncated
+      .alert.alert-info.py-2 Showing the first #{results.length}. Add a filter to narrow the list.
+
+    if !results.length
+      .card.border-0.bg-body-tertiary.text-center
+        .card-body.p-5
+          i.bi.bi-search.display-4.text-body-secondary(aria-hidden="true")
+          h2.h5.mt-3 No assignments match
+          p.text-body-secondary Try removing a filter or widening the date range.
+          a.btn.btn-primary(href=editSearchUrl) Change filters
+    else
+      .card.border-0.shadow-sm
+        .table-responsive
+          table.table.table-hover.align-middle.mb-0
+            thead.table-light
+              tr
+                th(scope="col") Assignment
+                th.d-none.d-md-table-cell(scope="col") Category
+                th(scope="col") Due
+                th(scope="col") Status
+                th.d-none.d-sm-table-cell(scope="col") Score
+                th.text-end(scope="col") Actions
+            tbody
+              each a in results
+                - const overdue = isOverdue(a)
+                - const status = assignmentStatuses[a.status]
+                tr
+                  td
+                    a.course-badge.me-2.text-decoration-none(href=`/courses/${a.course_id}` style=`--course-color: ${a.course_color}`)= a.course_code
+                    a.fw-semibold.text-decoration-none(href=`/assignments/${a.id}/edit`)= a.title
+                  td.d-none.d-md-table-cell= a.category_name
+                  td.text-nowrap(class={ 'text-danger fw-semibold': overdue })
+                    = formatDue(a.due_date)
+                    if overdue
+                      .small Overdue
+                  td
+                    span.badge(class=status.badge)= status.label
+                  td.d-none.d-sm-table-cell.text-nowrap
+                    if a.points_earned === null
+                      span.text-body-secondary — / #{a.points_possible}
+                    else
+                      | #{a.points_earned} / #{a.points_possible}
+                  td.text-end.text-nowrap
+                    if ['not_started', 'in_progress'].includes(a.status)
+                      form.d-inline(method="post" action=`/assignments/${a.id}/submit`)
+                        input(type="hidden" name="return_to" value=returnTo)
+                        button.btn.btn-sm.btn-outline-success.me-1(type="submit" aria-label=`Mark ${a.title} as submitted`)
+                          i.bi.bi-check-lg(aria-hidden="true")
+                    a.btn.btn-sm.btn-outline-primary.me-1(href=`/assignments/${a.id}/edit` aria-label=`Edit ${a.title}`)
+                      i.bi.bi-pencil(aria-hidden="true")
+                    button.btn.btn-sm.btn-outline-danger(type="button" data-bs-toggle="modal" data-bs-target="#deleteAssignmentModal"
+                      data-delete-name=a.title data-delete-action=`/assignments/${a.id}/delete` data-return-to=returnTo
+                      aria-label=`Delete ${a.title}`)
+                      i.bi.bi-trash(aria-hidden="true")
+
+  include _delete-modal
+
+block scripts
+  script(src="/js/delete-modal.js")

@@ -17,6 +17,7 @@
       .modal-footer
         button.btn.btn-outline-secondary(type="button" data-bs-dismiss="modal") Cancel
         form(method="post" action="#" data-field="form")
+          input(type="hidden" name="return_to" value="" data-field="return")
           button.btn.btn-danger(type="submit")
             i.bi.bi-trash.me-1(aria-hidden="true")
             | Delete assignment

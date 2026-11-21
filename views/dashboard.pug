@@ -1,30 +1,99 @@
 extends layout
 
+//- One unfinished assignment in a dashboard list.
+mixin workItem(a, overdue)
+  li.list-group-item.d-flex.align-items-center.gap-3.px-0
+    .flex-grow-1.min-w-0
+      a.course-badge.me-2.text-decoration-none(href=`/courses/${a.course_id}` style=`--course-color: ${a.course_color}`)= a.course_code
+      a.fw-semibold.text-decoration-none(href=`/assignments/${a.id}/edit`)= a.title
+      .small(class=(overdue ? 'text-danger fw-semibold' : 'text-body-secondary'))
+        if overdue
+          i.bi.bi-exclamation-circle-fill.me-1(aria-hidden="true")
+          | Overdue ·#{' '}
+        | #{formatDue(a.due_date)} · #{a.category_name}
+    form.flex-shrink-0(method="post" action=`/assignments/${a.id}/submit`)
+      input(type="hidden" name="return_to" value="/dashboard")
+      button.btn.btn-sm.btn-outline-success(type="submit" aria-label=`Mark ${a.title} as submitted`)
+        i.bi.bi-check-lg(aria-hidden="true")
+        span.d-none.d-xl-inline.ms-1 Submitted
+
 block content
   .container.py-5
-    h1.h2.mb-1 Hi, #{currentUser.display_name}!
-    p.text-body-secondary.mb-4 Here's a quick look at your account.
+    .d-flex.flex-wrap.align-items-start.justify-content-between.gap-3.mb-4
+      div
+        h1.h2.mb-1 Hi, #{currentUser.display_name}!
+        p.text-body-secondary.mb-0= today
+      .d-flex.flex-wrap.gap-2
+        a.btn.btn-primary(href="/assignments/new")
+          i.bi.bi-plus-lg.me-1(aria-hidden="true")
+          | Assignment
+        a.btn.btn-outline-primary(href="/courses/new")
+          i.bi.bi-plus-lg.me-1(aria-hidden="true")
+          | Course
 
-    .row.g-3.mb-4
-      each stat in [{ label: 'Courses', value: stats.courses, icon: 'journal-bookmark' }, { label: 'Assignments', value: stats.assignments, icon: 'list-check' }, { label: 'Due in the next 7 days', value: stats.dueThisWeek, icon: 'calendar-week' }]
-        .col-sm-4
-          .card.h-100.border-0.shadow-sm
-            .card-body.d-flex.align-items-center.gap-3
-              .feature-icon
-                i.bi(class=`bi-${stat.icon}` aria-hidden="true")
-              div
-                .fs-3.fw-bold.lh-1= stat.value
-                .small.text-body-secondary= stat.label
+    if !hasCourses
+      .card.border-0.bg-body-tertiary.text-center
+        .card-body.p-5
+          i.bi.bi-journal-plus.display-4.text-primary(aria-hidden="true")
+          h2.h5.mt-3 Start by adding a course
+          p.text-body-secondary Enter its grading categories from the syllabus, then add assignments. They'll show up here.
+          a.btn.btn-primary(href="/courses/new") Add Course
+    else
+      .row.g-4
+        .col-lg-7
+          if overdue.length
+            section.card.border-0.shadow-sm.mb-4.border-start.border-danger.border-4#overdue
+              .card-body.p-4
+                h2.h5.text-danger.mb-2
+                  i.bi.bi-exclamation-triangle-fill.me-2(aria-hidden="true")
+                  | Overdue
+                  span.badge.rounded-pill.text-bg-danger.ms-2= overdue.length
+                ul.list-group.list-group-flush
+                  each a in overdue
+                    +workItem(a, true)
 
-    .card.border-0.bg-body-tertiary
-      .card-body.p-4
-        h2.h5
-          i.bi.bi-person-circle.me-2(aria-hidden="true")
-          | Your account
-        dl.row.mb-0
-          dt.col-sm-3 Display name
-          dd.col-sm-9= currentUser.display_name
-          dt.col-sm-3 Email
-          dd.col-sm-9.mb-0= currentUser.email
-        p.text-body-secondary.small.mt-3.mb-0
-          | The full dashboard (due dates, overdue work and grade cards) is a Work in Progress.
+          section.card.border-0.shadow-sm#dueSoon
+            .card-body.p-4
+              h2.h5.mb-2
+                i.bi.bi-calendar-week.me-2(aria-hidden="true")
+                | Due in the next 7 days
+                span.badge.rounded-pill.text-bg-primary.ms-2= dueSoon.length
+              if !dueSoon.length
+                p.text-body-secondary.mb-0.mt-3 Nothing due this week.
+              else
+                ul.list-group.list-group-flush
+                  each a in dueSoon
+                    +workItem(a, false)
+              a.small.d-inline-block.mt-3.text-decoration-none(href="/assignments/search") Search all assignments
+
+        .col-lg-5
+          section#gradeCards
+            h2.h5.mb-3
+              i.bi.bi-graph-up-arrow.me-2(aria-hidden="true")
+              | Grades
+              span.small.fw-normal.text-body-secondary.ms-2= term
+            each c in gradeCards
+              - const pct = c.grade.percent === null ? 0 : Math.max(0, Math.min(100, c.grade.percent))
+              a.card.border-0.shadow-sm.mb-3.text-decoration-none.text-body.grade-card(href=`/courses/${c.id}`)
+                .card-body.p-3
+                  .d-flex.align-items-center.justify-content-between.gap-2.mb-2
+                    div.min-w-0
+                      span.course-badge.me-2(style=`--course-color: ${c.color}`)= c.code
+                      span.small.text-body-secondary= c.name
+                    .text-nowrap
+                      span.fw-bold= grades.formatPercent(c.grade.percent)
+                      if c.grade.letter
+                        span.badge.text-bg-light.border.ms-2= c.grade.letter
+                  .progress(role="progressbar" aria-label=`${c.code} grade` aria-valuenow=grades.round(pct) aria-valuemin="0" aria-valuemax="100" style="height: 0.5rem")
+                    .progress-bar(style=`width: ${pct}%; background-color: ${c.color}`)
+                  .small.text-body-secondary.mt-2
+                    if c.grade.percent === null
+                      | No graded work yet · Target #{grades.formatPercent(c.target_grade)}
+                    else
+                      | Target #{grades.formatPercent(c.target_grade)}
+                      if c.grade.needed.status === 'reachable'
+                        |  · need #{grades.formatPercent(c.grade.needed.needed)} on the rest
+                      else if c.grade.needed.status === 'secured'
+                        |  · on track
+                      else if c.grade.needed.status === 'unreachable'
+                        |  · out of reach

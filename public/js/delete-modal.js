@@ -22,6 +22,8 @@
       const button = event.relatedTarget;
       assignmentModal.querySelector('[data-field="name"]').textContent = button.dataset.deleteName;
       assignmentModal.querySelector('[data-field="form"]').action = button.dataset.deleteAction;
+      // Search results and the dashboard ask to come back to the same page.
+      assignmentModal.querySelector('[data-field="return"]').value = button.dataset.returnTo || '';
     });
   }
 })();

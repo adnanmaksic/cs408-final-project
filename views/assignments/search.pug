@@ -1,0 +1,69 @@
+extends ../layout
+
+//- One filter field with its inline error.
+mixin error(name)
+  if errors[name]
+    .invalid-feedback(id=`${name}-error`)= errors[name]
+
+block content
+  .container.py-5
+    h1.h2.mb-1 Assignment Search
+    p.text-body-secondary.mb-4 Find assignments across all your courses. Leave a filter empty to skip it.
+
+    if !courseOptions.length
+      .card.border-0.bg-body-tertiary.text-center
+        .card-body.p-5
+          i.bi.bi-search.display-4.text-primary(aria-hidden="true")
+          h2.h5.mt-3 Nothing to search yet
+          p.text-body-secondary Add a course and some assignments first.
+          a.btn.btn-primary(href="/courses/new") Add Course
+    else
+      .card.border-0.shadow-sm
+        .card-body.p-4
+          if Object.keys(errors).length
+            .alert.alert-danger.py-2(role="alert") Fix the highlighted filters.
+          form#searchForm(method="get" action="/assignments/search/results" novalidate)
+            .row.g-3
+              .col-md-6.col-lg-4
+                label.form-label(for="course_id") Course
+                select#course_id.form-select(name="course_id" class={ 'is-invalid': errors.course_id } aria-describedby=(errors.course_id ? 'course_id-error' : undefined))
+                  option(value="") Any course
+                  each c in courseOptions
+                    option(value=c.id selected=(String(c.id) === values.course_id)) #{c.code}: #{c.name}
+                +error('course_id')
+              .col-md-6.col-lg-4
+                label.form-label(for="category_id") Category
+                select#category_id.form-select(name="category_id" class={ 'is-invalid': errors.category_id } aria-describedby=(errors.category_id ? 'category_id-error' : undefined))
+                  option(value="") Any category
+                  each c in courseOptions
+                    each cat in c.categories
+                      option(value=cat.id data-course=c.id selected=(String(cat.id) === values.category_id)) #{c.code} · #{cat.name}
+                +error('category_id')
+              .col-md-6.col-lg-4
+                label.form-label(for="status") Status
+                select#status.form-select(name="status" class={ 'is-invalid': errors.status } aria-describedby=(errors.status ? 'status-error' : undefined))
+                  option(value="") Any status
+                  each s, key in assignmentStatuses
+                    option(value=key selected=(key === values.status))= s.label
+                +error('status')
+              .col-md-6.col-lg-4
+                label.form-label(for="q") Keyword
+                input#q.form-control(type="search" name="q" value=values.q maxlength="100" placeholder="Title or notes" class={ 'is-invalid': errors.q } aria-describedby=(errors.q ? 'q-error' : undefined))
+                +error('q')
+              .col-6.col-lg-4
+                label.form-label(for="due_from") Due from
+                input#due_from.form-control(type="date" name="due_from" value=values.due_from class={ 'is-invalid': errors.due_from } aria-describedby=(errors.due_from ? 'due_from-error' : undefined))
+                +error('due_from')
+              .col-6.col-lg-4
+                label.form-label(for="due_to") Due to
+                input#due_to.form-control(type="date" name="due_to" value=values.due_to class={ 'is-invalid': errors.due_to } aria-describedby=(errors.due_to ? 'due_to-error' : undefined))
+                +error('due_to')
+
+            .d-flex.flex-wrap.gap-2.mt-4
+              button.btn.btn-primary(type="submit")
+                i.bi.bi-search.me-1(aria-hidden="true")
+                | Search
+              a.btn.btn-outline-secondary(href="/assignments/search") Clear filters
+
+block scripts
+  script(src="/js/search-form.js")

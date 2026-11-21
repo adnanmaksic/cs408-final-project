@@ -205,3 +205,24 @@ button.nav-pill {
   justify-content: center;
   font-weight: 600;
 }
+
+/* Dashboard */
+.min-w-0 {
+  min-width: 0;
+}
+
+.grade-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.grade-card:hover,
+.grade-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Search results: the filters in use */
+.filter-chip {
+  font-size: 0.85rem;
+  padding: 0.45em 0.8em;
+}
